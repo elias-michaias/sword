@@ -1,6 +1,8 @@
 package main
 
 use core.js
+
+#load "./style.onyx"
 use style{*}
 
 get_dom :: () => {

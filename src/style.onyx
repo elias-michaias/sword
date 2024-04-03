@@ -2,19 +2,22 @@ package style
 
 use core.js
 
-get_style :: (el: $T, attr: str) -> $T {
-    return el->get("style")->get(attr);
+get_style :: (el: $T, attr: str) -> #auto {
+    e := el->get("style")->get(attr);
+    return e;
 }
 
-set_style :: (el: $T, attr: str, val: str) -> $T {
+set_style :: (el: $T, attr: str, val: str) -> #auto {
     el->get("style")->set(attr, val);
     return el;
 }
 
-set_display :: (el $T, val: str) -> $T {
-    return el |> set_style("display", val);
+set_display :: (el: $T, val: str) -> #auto {
+    el |> set_style("display", val);
+    return el;
 }
 
-text_color :: (el $T, color: str) -> $T {
-    return el |> set_style("color", color);
+text_color :: (el: $T, color: str) -> #auto {
+    el |> set_style("color", color);
+    return el;
 }
