@@ -1,4 +1,6 @@
-# An experimental functional API for more easily leveraging Onyx's JavaScript interop.
+# onyx-functional-web
+
+An experimental functional API for more easily leveraging Onyx's JavaScript interop.
 
 ```fsharp
     x := 0;
