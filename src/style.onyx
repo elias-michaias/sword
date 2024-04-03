@@ -1,0 +1,7 @@
+package style
+
+use core.js
+
+get_style :: (el: $T) -> $T {
+    
+}
