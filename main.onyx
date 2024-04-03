@@ -14,7 +14,7 @@ get_id :: (dom: $T, new_el: str) -> T {
     return el;
 }
 
-append :: (el: $T, target: str = "body") -> T {
+append :: (el: $T, target: $R = "body") -> T {
     dom := js.Global->get("document");
     dom->get(target)->call("appendChild", el);
     return el;
@@ -27,11 +27,6 @@ grab :: (el: $T, target: T) -> T {
 }
 
 inner :: (el: $T, html: $R) -> T {
-    el->set("innerHTML", html);
-    return el;
-}
-
-react :: (el: $T, html: $R) -> T {
     el->set("innerHTML", html);
     return el;
 }
