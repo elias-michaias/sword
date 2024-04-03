@@ -19,4 +19,11 @@ An experimental functional API for more easily leveraging Onyx's JavaScript inte
             alert("It's reactive!");
         }
     });
+
+    DOM
+    |> get_id("grabbable")
+    |> click((this) => {
+        this
+        |> inner("I was clicked!");
+    });
 ```

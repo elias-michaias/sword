@@ -9,13 +9,29 @@ main :: () {
         return el;
     }
 
+    get_id :: (dom: $T, new_el: str) -> T {
+        el := dom->call("getElementById", new_el);
+        return el;
+    }
+
     append :: (el: $T, target: str = "body") -> T {
         dom := js.Global->get("document");
         dom->get(target)->call("appendChild", el);
         return el;
     }
 
+    grab :: (el: $T, target: T) -> T {
+        dom := js.Global->get("document");
+        dom->get(el)->call("appendChild", target);
+        return el;
+    }
+
     inner :: (el: $T, html: $R) -> T {
+        el->set("innerHTML", html);
+        return el;
+    }
+
+    react :: (el: $T, html: $R) -> T {
         el->set("innerHTML", html);
         return el;
     }
@@ -37,15 +53,18 @@ main :: () {
     DOM 
     |> create("button") 
     |> append()
-    |> inner("Click me!")
+    |> inner(x)
     |> click((this, [x]) => {
         x+=1;
-
-        this 
+        
+        this
         |> inner(x);
+    });
 
-        if x < 2 {
-            alert("It's reactive!");
-        }
+    DOM
+    |> get_id("grabbable")
+    |> click((this) => {
+        this
+        |> inner("I was clicked!");
     });
 }
