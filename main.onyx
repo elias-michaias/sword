@@ -1,0 +1,51 @@
+use core.js
+
+main :: () {
+
+    DOM := js.Global->get("document");
+
+    create :: (dom: $T, new_el: str = "div") -> T {
+        el := dom->call("createElement", new_el);
+        return el;
+    }
+
+    append :: (el: $T, target: str = "body") -> T {
+        dom := js.Global->get("document");
+        dom->get(target)->call("appendChild", el);
+        return el;
+    }
+
+    inner :: (el: $T, html: $R) -> T {
+        el->set("innerHTML", html);
+        return el;
+    }
+
+    alert :: (msg: str) {
+        js.Global->call("alert", msg);
+    }
+
+    click :: (el: $T, func: (T) -> void) -> #auto {
+        el->call("addEventListener", "click", js.func((this, args, [func]) => {
+            func(this);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    x := 0;
+
+    DOM 
+    |> create("button") 
+    |> append()
+    |> inner("Click me!")
+    |> click((this, [x]) => {
+        x+=1;
+
+        this 
+        |> inner(x);
+
+        if x < 2 {
+            alert("It's reactive!");
+        }
+    });
+}

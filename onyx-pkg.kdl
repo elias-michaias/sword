@@ -1,0 +1,13 @@
+package {
+    name "js-api-terse" 
+    author "elias-michaias" 
+    url "idk" 
+    description "testing a terser functional JS api" 
+    version "0.0.1" 
+}
+
+config {
+    dependency_source_path "./lib" 
+    dependency_binary_path "./bin" 
+}
+
