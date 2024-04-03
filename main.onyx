@@ -1,52 +1,56 @@
 use core.js
 
+get_dom :: () => {
+    return js.Global->get("document");
+}
+
+create :: (dom: $T, new_el: str = "div") -> T {
+    el := dom->call("createElement", new_el);
+    return el;
+}
+
+get_id :: (dom: $T, new_el: str) -> T {
+    el := dom->call("getElementById", new_el);
+    return el;
+}
+
+append :: (el: $T, target: str = "body") -> T {
+    dom := js.Global->get("document");
+    dom->get(target)->call("appendChild", el);
+    return el;
+}
+
+grab :: (el: $T, target: T) -> T {
+    dom := js.Global->get("document");
+    dom->get(el)->call("appendChild", target);
+    return el;
+}
+
+inner :: (el: $T, html: $R) -> T {
+    el->set("innerHTML", html);
+    return el;
+}
+
+react :: (el: $T, html: $R) -> T {
+    el->set("innerHTML", html);
+    return el;
+}
+
+alert :: (msg: str) {
+    js.Global->call("alert", msg);
+}
+
+click :: (el: $T, func: (T) -> $R) -> #auto {
+    el->call("addEventListener", "click", js.func((this, args, [func]) => {
+        func(this);
+        return js.Undefined;
+    }));
+    return el;
+}
+
 main :: () {
 
-    DOM := js.Global->get("document");
-
-    create :: (dom: $T, new_el: str = "div") -> T {
-        el := dom->call("createElement", new_el);
-        return el;
-    }
-
-    get_id :: (dom: $T, new_el: str) -> T {
-        el := dom->call("getElementById", new_el);
-        return el;
-    }
-
-    append :: (el: $T, target: str = "body") -> T {
-        dom := js.Global->get("document");
-        dom->get(target)->call("appendChild", el);
-        return el;
-    }
-
-    grab :: (el: $T, target: T) -> T {
-        dom := js.Global->get("document");
-        dom->get(el)->call("appendChild", target);
-        return el;
-    }
-
-    inner :: (el: $T, html: $R) -> T {
-        el->set("innerHTML", html);
-        return el;
-    }
-
-    react :: (el: $T, html: $R) -> T {
-        el->set("innerHTML", html);
-        return el;
-    }
-
-    alert :: (msg: str) {
-        js.Global->call("alert", msg);
-    }
-
-    click :: (el: $T, func: (T) -> void) -> #auto {
-        el->call("addEventListener", "click", js.func((this, args, [func]) => {
-            func(this);
-            return js.Undefined;
-        }));
-        return el;
-    }
+    DOM := get_dom();
 
     x := 0;
 
@@ -54,17 +58,14 @@ main :: () {
     |> create("button") 
     |> append()
     |> inner(x)
-    |> click((this, [x]) => {
+    |> click((el, [x]) => {
         x+=1;
-        
-        this
-        |> inner(x);
+        el |> inner(x);
     });
 
     DOM
     |> get_id("grabbable")
-    |> click((this) => {
-        this
-        |> inner("I was clicked!");
+    |> click((el) => {
+        el |> inner("I was clicked!");
     });
 }
