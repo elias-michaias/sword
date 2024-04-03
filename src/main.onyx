@@ -1,7 +1,7 @@
 package main
 
 use core.js
-use style
+use style{*}
 
 get_dom :: () => {
     return js.Global->get("document");
@@ -59,7 +59,8 @@ main :: () {
     |> click((el, [x]) => {
         x+=1;
         el |> inner(x);
-    });
+    })
+    |> set_style("border-radius", "5px");
 
     DOM
     |> get_id("grabbable")
