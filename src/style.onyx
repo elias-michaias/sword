@@ -12,32 +12,31 @@ set_style :: (el: js.Value, attr: str, val: str) -> js.Value {
     return el;
 }
 
-remove_style :: (el: js.Value, val: str) -> js.Value{
-    el->get("style")->remove(attr);
+remove_style :: (el: js.Value, attr: str) -> js.Value {
+    el->get("style")->set(attr, "");
     return el;
 }
-
 
 // style helpers {{{
 
-set_display :: (el: js.Value, val: str) -> js.Value {
-    el |> set_style("display", val);
-    return el;
-}
+    set_display :: (el: js.Value, val: str) -> js.Value {
+        el |> set_style("display", val);
+        return el;
+    }
 
-set_color :: (el: js.Value, color: str) -> js.Value {
-    el |> set_style("color", color);
-    return el;
-}
+    set_color :: (el: js.Value, color: str) -> js.Value {
+        el |> set_style("color", color);
+        return el;
+    }
 
-set_height :: (el: js.Value, val: str) -> js.Value{
-    el |> set_style("height", val);
-    return el;
-}
+    set_height :: (el: js.Value, val: str) -> js.Value{
+        el |> set_style("height", val);
+        return el;
+    }
 
-set_width :: (el: js.Value, val: str) -> js.Value{
-    el |> set_style("width", val);
-    return el;
-}
+    set_width :: (el: js.Value, val: str) -> js.Value{
+        el |> set_style("width", val);
+        return el;
+    }
 
 // style helpers }}}

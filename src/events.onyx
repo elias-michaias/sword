@@ -1,0 +1,63 @@
+package events 
+
+use core.js
+
+click :: (el: $T, func: (T) -> $R) -> #auto {
+    el->call("addEventListener", "click", js.func((this, args, [func]) => {
+        func(this);
+        return js.Undefined;
+    }));
+    return el;
+}
+
+dblclick :: (el: $T, func: (T) -> $R) -> #auto {
+    el->call("addEventListener", "dblclick", js.func((this, args, [func]) => {
+        func(this);
+        return js.Undefined;
+    }));
+    return el;
+}
+
+contextmenu :: (el: $T, func: (T) -> $R) -> #auto {
+    el->call("addEventListener", "contextmenu", js.func((this, args, [func]) => {
+        func(this);
+        return js.Undefined;
+    }));
+    return el;
+}   
+
+mouseenter :: (el: $T, func: (T) -> $R) -> #auto {
+    el->call("addEventListener", "mouseenter", js.func((this, args, [func]) => {
+        func(this);
+        return js.Undefined;
+    }));
+    return el;
+}
+
+mouseleave :: (el: $T, func: (T) -> $R) -> #auto {
+    el->call("addEventListener", "mouseleave", js.func((this, args, [func]) => {
+        func(this);
+        return js.Undefined;
+    }));
+    return el;
+}
+
+// custom events {{{
+
+    listen :: (el: $T, event: str, func: (T) -> $R) -> #auto {
+        el->call("addEventListener", event, js.func((this, args, [func]) => {
+            func(this);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    dispatch :: (event: str) {
+        js.Global->get("document")->call("dispatchEvent", event);
+    }
+    
+    event :: (event: str) {
+        js.Global->get("document")->call("CustomEvent", event);
+    }
+
+// custom events }}}
