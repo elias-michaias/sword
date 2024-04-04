@@ -21,7 +21,7 @@ An experimental functional API for more easily leveraging Onyx's JavaScript inte
     });
 
     DOM
-    |> get_id("grabbable")
+    |> query_id("grabbable")
     |> click((this) => {
         this
         |> inner("I was clicked!");
