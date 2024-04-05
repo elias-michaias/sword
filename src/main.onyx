@@ -12,6 +12,8 @@ use head{*}
 #load "./style.onyx"
 use style{*}
 
+use core.js
+
 main :: () {
 
     DOM := get_dom();
@@ -42,13 +44,15 @@ main :: () {
     |> append(body)
     |> click((el) => {
         el |> set_text("I was clicked...");
-    });
+    })
+    |> set_color("red")
+    |> set_width("100px");
 
     h1s := get_dom()
-    |> query_all_class("test")
-    |> batch((el) => {
-        el |> click((el) => {
-            el |> set_text("I was clicked...");
+    |> query_all("h1")
+    |> batch((h1) => {
+        h1 |> click((el) => {
+            console_log("Clicked!");
         }); 
     });
 

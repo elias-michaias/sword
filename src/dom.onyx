@@ -60,6 +60,11 @@ get_inner :: (el: js.Value) -> str {
     return inner->as_str()->unwrap();
 }
 
+swap_inner :: (el: js.Value, target: js.Value) -> js.Value {
+    el->set("innerHTML", target->get("innerHTML"));
+    return el;
+}
+
 set_outer :: (el: js.Value, args: ..any) -> js.Value {
     result: dyn_str;
     defer delete(&result);
@@ -75,6 +80,11 @@ set_outer :: (el: js.Value, args: ..any) -> js.Value {
 get_outer :: (el: js.Value) -> str {
     outer := el->get("outerHTML");
     return outer->as_str()->unwrap();
+}
+
+swap_outer :: (el: js.Value, target: js.Value) -> js.Value {
+    el->set("outerHTML", target->get("outerHTML"));
+    return el;
 }
 
 set_text :: (el: js.Value, args: ..any) -> js.Value {
@@ -94,13 +104,8 @@ get_text :: (el: js.Value) -> str {
     return text->as_str()->unwrap();
 }
 
-inswap :: (el: js.Value, target: js.Value) -> js.Value {
-    el->set("innerHTML", target->get("innerHTML"));
-    return el;
-}
-
-outswap :: (el: js.Value, target: js.Value) -> js.Value {
-    el->set("outerHTML", target->get("outerHTML"));
+swap_text :: (el: js.Value, target: js.Value) -> js.Value {
+    el->set("textContent", target->get("textContent"));
     return el;
 }
 

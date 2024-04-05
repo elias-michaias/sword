@@ -13,6 +13,7 @@ config {
 
 lsp {
     mode "file"
+    source_files "./src"
     include_dirs ""
     working_dir "."
 }
