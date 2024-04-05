@@ -147,8 +147,13 @@ batch :: (els: js.Value, fn: (js.Value) -> void) -> js.Value {
 
 // class {{{
 
-        query_class :: (dom: js.Value, new_el: str) -> #auto {
-            el := dom->call("getElementByClassName", new_el);
+        query_class :: (dom: js.Value, new_el: str) -> js.Value {
+            el := dom->call("querySelector", str.concat(context.allocator, ".", new_el));
+            return el;
+        }
+
+        query_all_class :: (dom: js.Value, new_el: str) -> #auto {
+            el := dom->call("getElementsByClassName", new_el);
             return el;
         }
 
@@ -186,6 +191,14 @@ batch :: (els: js.Value, fn: (js.Value) -> void) -> js.Value {
             new_attr := tprintf("{}", attr);
             input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
             el := dom->call("querySelector", input);
+            return el;
+        }
+        
+        query_all_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
+            new_val := tprintf("{}", val);
+            new_attr := tprintf("{}", attr);
+            input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
+            el := dom->call("querySelectorAll", input);
             return el;
         }
 

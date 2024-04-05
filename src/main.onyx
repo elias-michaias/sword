@@ -45,13 +45,11 @@ main :: () {
     });
 
     h1s := get_dom()
-    |> query_all("h1")
+    |> query_all_class("test")
     |> batch((el) => {
         el |> click((el) => {
             el |> set_text("I was clicked...");
         }); 
     });
-
-
 
 }
