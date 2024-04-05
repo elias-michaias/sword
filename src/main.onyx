@@ -6,6 +6,9 @@ use dom{*}
 #load "./events.onyx"
 use events{*}
 
+#load "./head.onyx"
+use head{*}
+
 #load "./style.onyx"
 use style{*}
 
@@ -15,42 +18,40 @@ main :: () {
     body := get_body();
     head := get_head();
 
-    special_div := DOM
-    |> query_id("special");
+    burger := event("burger");
 
-    new_header := DOM
+    DOM 
+    |> listen("burger", (dom) => {
+        console_log("Burger event!");
+    });
+
+    ghost_header := DOM
     |> create("h1")
-    |> set_id("header")
-    |> set_class("head2 head3")
-    |> inner("Hello, World!")
-    |> append(special_div)
+    |> set_id("ghost")
+    |> set_inner("BURGER");
+
+    header := DOM
+    |> query("h1#grabbable.specific")
+    |> listen("burger", (el) => {
+        el |> set_text();
+    });
+
+    new_button := DOM
+    |> create("button")
+    |> set_inner("Click me!")
+    |> append(body)
     |> click((el) => {
-        el |> get_id() |> console_log();
+        el |> set_text("I was clicked...");
     });
 
-    second_header := DOM
-    |> create("h1")
-    |> set_id("heading")
-    |> set_class("head12 food")
-    |> inner("WORD.");
-
-    event_test := DOM
-    |> query_id("grabbable")
-    |> listen("burger", (el, [new_header]) => {
-        new_header
-        |> outer("<h2 id='header' class='head2 head3'>", "BURGER", "</h2>");
+    h1s := get_dom()
+    |> query_all("h1")
+    |> batch((el) => {
+        el |> click((el) => {
+            el |> set_text("I was clicked...");
+        }); 
     });
-    
 
-    textarea := DOM
-    |> query_attr("[type='textarea']")
-    |> append(special_div)
-    |> mouseenter((el) => {
-        el |> get_attr("type") |> console_log();
-    });
-    
 
-    event("burger");
-    console_log(4);
 
 }

@@ -1,0 +1,66 @@
+package head
+
+#load "./dom.onyx"
+use dom{*}
+
+use core.js
+use core {
+    tprintf
+}
+
+set_meta :: (name: str, content: str) {
+    _meta := get_head()
+    |> query_attr("name", name);
+    if _meta->is_null() {
+        meta := get_dom()
+        |> create("meta")
+        |> set_attr("name", name)
+        |> set_attr("content", content)
+        |> prepend(get_head());
+    } else {
+        _meta
+        |> set_attr("content", content);
+    }
+}
+
+get_meta :: (name: str) -> str {
+    _meta := get_head()
+    |> query_attr("name", name);
+    if _meta->is_null() {
+        return "";
+    } else {
+        return _meta |> get_attr("content");
+    }
+}
+
+remove_meta :: (name: str) {
+    _meta := get_head()
+    |> query_attr("name", name);
+    if !_meta->is_null() {
+        _meta |> remove();
+    }
+}
+
+set_title :: (title: str) {
+    _title := get_head()
+    |> query("title");
+    if _title->is_null() {
+        __title := get_dom()
+        |> create("title")
+        |> set_inner(title)
+        |> prepend(get_head());
+    } else {
+        _title
+        |> set_inner(title);
+    }
+}
+
+get_title :: () -> str {
+    _title := get_head()
+    |> query("title");
+    if _title->is_null() {
+        return "";
+    } else {
+        return _title |> get_inner();
+    }
+}

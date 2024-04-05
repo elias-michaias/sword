@@ -52,12 +52,13 @@ mouseleave :: (el: $T, func: (T) -> $R) -> #auto {
         return el;
     }
 
-    dispatch :: (event: str) {
-        js.Global->get("document")->call("dispatchEvent", event);
+    dispatch :: (el: js.Value, event: js.Value) {
+        el->call("dispatchEvent", event);
     }
     
-    event :: (event: str) {
-        js.Global->get("document")->call("CustomEvent", event);
+    event :: (event: str) -> js.Value {
+        new_event := js.Global->get("CustomEvent")->new(event);
+        return new_event;
     }
 
 // custom events }}}

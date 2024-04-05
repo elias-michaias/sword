@@ -33,12 +33,17 @@ append :: (el: js.Value, target: js.Value) -> js.Value {
     return el;
 }
 
+prepend :: (el: js.Value, target: js.Value) -> js.Value {
+    target->call("prepend", el);
+    return el;
+}
+
 grab :: (el: js.Value, target: js.Value) -> js.Value {
     el->call("appendChild", target);
     return el;
 }
 
-inner :: (el: js.Value, args: ..any) -> js.Value {
+set_inner :: (el: js.Value, args: ..any) -> js.Value {
     result: dyn_str;
     defer delete(&result);
     
@@ -50,7 +55,12 @@ inner :: (el: js.Value, args: ..any) -> js.Value {
     return el;
 }
 
-outer :: (el: js.Value, args: ..any) -> js.Value {
+get_inner :: (el: js.Value) -> str {
+    inner := el->get("innerHTML");
+    return inner->as_str()->unwrap();
+}
+
+set_outer :: (el: js.Value, args: ..any) -> js.Value {
     result: dyn_str;
     defer delete(&result);
     
@@ -60,6 +70,55 @@ outer :: (el: js.Value, args: ..any) -> js.Value {
 
     el->set("outerHTML", cast(str) result);
     return el;
+}
+
+get_outer :: (el: js.Value) -> str {
+    outer := el->get("outerHTML");
+    return outer->as_str()->unwrap();
+}
+
+set_text :: (el: js.Value, args: ..any) -> js.Value {
+    result: dyn_str;
+    defer delete(&result);
+    
+    for arg in args {
+        conv.format_va(&result, "{}", any.[ arg ]);
+    }
+
+    el->set("textContent", cast(str) result);
+    return el;
+}
+
+get_text :: (el: js.Value) -> str {
+    text := el->get("textContent");
+    return text->as_str()->unwrap();
+}
+
+inswap :: (el: js.Value, target: js.Value) -> js.Value {
+    el->set("innerHTML", target->get("innerHTML"));
+    return el;
+}
+
+outswap :: (el: js.Value, target: js.Value) -> js.Value {
+    el->set("outerHTML", target->get("outerHTML"));
+    return el;
+}
+
+query :: (dom: js.Value, new_el: str) -> js.Value {
+    el := dom->call("querySelector", new_el);
+    return el;
+}
+
+query_all :: (dom: js.Value, new_el: str) -> js.Value {
+    el:= dom->call("querySelectorAll", new_el);
+    return el;
+}
+
+batch :: (els: js.Value, fn: (js.Value) -> void) -> js.Value {
+    for i in els->length() {
+        fn(els->index(i));
+    }
+    return els;
 }
 
 // id {{{
@@ -122,23 +181,26 @@ outer :: (el: js.Value, args: ..any) -> js.Value {
 
 // attr {{{
 
-        query_attr :: (dom: js.Value, attr: $T) -> js.Value {
-            el := dom->call("querySelector", tprintf("{}", attr));
+        query_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
+            new_val := tprintf("{}", val);
+            new_attr := tprintf("{}", attr);
+            input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
+            el := dom->call("querySelector", input);
             return el;
         }
 
-        set_attr :: (el: js.Value, attr: $T, val: $T) -> js.Value {
-            el->call("setAttribute", tprintf("{}", attr), tprintf("{}", val));
+        set_attr :: (el: js.Value, attr: str, val: $T) -> js.Value {
+            el->call("setAttribute", attr, tprintf("{}", val));
             return el;
         }
 
-        remove_attr :: (el: js.Value, attr: $T) -> js.Value {
-            el->call("removeAttribute", tprintf("{}", attr));
+        remove_attr :: (el: js.Value, attr: str) -> js.Value {
+            el->call("removeAttribute", attr);
             return el;
         }
 
-        get_attr :: (el: js.Value, attr: $T) -> str {
-            attribute := el->call("getAttribute", tprintf("{}", attr));
+        get_attr :: (el: js.Value, attr: str) -> str {
+            attribute := el->call("getAttribute", attr);
             return attribute->as_str()->unwrap();
         }
 
