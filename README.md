@@ -1,4 +1,4 @@
-# sword-onyx
+# sword
 Sword is a **fine-grained, functional, front-end** framework for the web that leverages the power of the *Onyx* programming language and runs on WebAssembly.
 
 Sword is still in very early development.
