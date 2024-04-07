@@ -1,5 +1,8 @@
 package reactive
 
+#load "./dom.onyx"
+use dom {*}
+
 use core {*}
 use core.misc {any_as}
 use core.intrinsics.types {type_is_function}
@@ -23,6 +26,8 @@ reactive_runtime: Runtime;
     reactive_runtime = r;
 }
 // init }}}
+
+// reaction logic {{{
 
 signal :: (value: $T) -> Signal(T) {
     reactive_runtime.signal_values->push(.{ data = alloc.on_heap(value), type = T });
@@ -82,3 +87,18 @@ Signal.set :: (self: #Self, value: self.T) {
         }
     }
 }
+
+// reaction logic }}}
+
+// dom integration {{{
+
+// Culprit of infinite resolution
+// react_inner :: (el: js.Value, signal: Signal($T)) -> js.Value {
+//     effect(([signal, el]) => {
+//         el |> set_inner(signal->get());
+//     });
+//     return el;
+// }
+
+// dom integration }}}
+ 

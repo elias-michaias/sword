@@ -1,19 +1,19 @@
 package main
 
 #load "./dom.onyx"
-use dom{*}
+use dom {*}
 
 #load "./events.onyx"
-use events{*}
+use events {*}
 
 #load "./head.onyx"
-use head{*}
+use head {*}
 
 #load "./reactive.onyx"
-use reactive{*}
+use reactive {*}
 
 #load "./style.onyx"
-use style{*}
+use style {*}
 
 use core.js
 
