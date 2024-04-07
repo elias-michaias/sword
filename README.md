@@ -13,7 +13,7 @@ main :: () {
     count := signal(0);
 
     effect(([count, counter_h1]) => {
-        counter_h1 |> set_text(count->get()?);
+        counter_h1 |> set_text(count->get());
     });
 
     new_button := get_dom()
@@ -21,7 +21,7 @@ main :: () {
     |> set_inner("Increment")
     |> append(get_body())
     |> click((el, [count]) => {
-        count->set(count->get()->unwrap() + 1);
+        count->set(count->get() + 1);
     });
 
 }

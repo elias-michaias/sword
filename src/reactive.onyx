@@ -4,7 +4,7 @@ use core {*}
 use core.misc {any_as}
 use core.intrinsics.types {type_is_function}
 
-//init {{{
+// init {{{
 Runtime :: struct {
     signal_values: [..] any;
     running_effect: ? u32;
@@ -22,7 +22,7 @@ reactive_runtime: Runtime;
     r.effect_arena = alloc.arena.make(context.allocator, 16 * 1024);
     reactive_runtime = r;
 }
-//init }}}
+// init }}}
 
 signal :: (value: $T) -> Signal(T) {
     reactive_runtime.signal_values->push(.{ data = alloc.on_heap(value), type = T });
@@ -53,7 +53,7 @@ Signal :: struct (T: type_expr) {
     id: u32;
 }
 
-Signal.get :: (self: #Self) -> ? self.T {
+Signal.get :: (self: #Self) -> self.T {
     v := self.cx.signal_values[self.id];
 
     self.cx.running_effect->with([ef] {
@@ -61,7 +61,7 @@ Signal.get :: (self: #Self) -> ? self.T {
         subs->insert(ef);
     });
 
-    return any_as(v, self.T) |> Optional.from_ptr();
+    return *any_as(v, self.T); 
 }
 
 Signal.set :: (self: #Self, value: self.T) {
