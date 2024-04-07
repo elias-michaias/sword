@@ -1,8 +1,8 @@
 package {
-    name "js-api-terse" 
+    name "sword-onyx" 
     author "elias-michaias" 
-    url "idk" 
-    description "testing a terser functional JS api" 
+    url "https://github.com/elias-michaias/sword-onyx" 
+    description "A fine-grained, functional, front-end framework for the web in Onyx." 
     version "0.0.1" 
 }
 
@@ -12,8 +12,9 @@ config {
 }
 
 lsp {
-    mode "file"
-    source_files "./src"
+    mode "project"
+    source_files "src/main.onyx"
+    runtime "js"
     include_dirs ""
     working_dir "."
 }

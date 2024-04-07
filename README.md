@@ -1,29 +1,26 @@
-# onyx-functional-web
+# sword-onyx
+Sword is a **fine-grained, functional, front-end** framework for the web that leverages the power of the *Onyx* programming language and runs on WebAssembly.
 
-An experimental functional API for more easily leveraging Onyx's JavaScript interop.
 
 ```fsharp
-    x := 0;
+main :: () {
 
-    DOM 
-    |> create("button") 
-    |> append()
-    |> inner("Click me!")
-    |> click((this, [x]) => {
-        x+=1;
+    counter_h1 := get_dom()
+    |> query("h1#counter");
+    
+    count := signal(0);
 
-        this 
-        |> inner(x);
-
-        if x < 2 {
-            alert("It's reactive!");
-        }
+    effect(([count, counter_h1]) => {
+        counter_h1 |> set_text(count->get()?);
     });
 
-    DOM
-    |> query_id("grabbable")
-    |> click((this) => {
-        this
-        |> inner("I was clicked!");
+    new_button := get_dom()
+    |> create("button")
+    |> set_inner("Increment")
+    |> append(get_body())
+    |> click((el, [count]) => {
+        count->set(count->get()->unwrap() + 1);
     });
+
+}
 ```

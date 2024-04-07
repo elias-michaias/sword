@@ -9,6 +9,9 @@ use events{*}
 #load "./head.onyx"
 use head{*}
 
+#load "./reactive.onyx"
+use reactive{*}
+
 #load "./style.onyx"
 use style{*}
 
@@ -16,44 +19,21 @@ use core.js
 
 main :: () {
 
-    DOM := get_dom();
-    body := get_body();
-    head := get_head();
+    counter_h1 := get_dom()
+    |> query("h1#counter");
+    
+    count := signal(0);
 
-    burger := event("burger");
-
-    DOM 
-    |> listen("burger", (dom) => {
-        console_log("Burger event!");
+    effect(([count, counter_h1]) => {
+        counter_h1 |> set_text(count->get()?);
     });
 
-    ghost_header := DOM
-    |> create("h1")
-    |> set_id("ghost")
-    |> set_inner("BURGER");
-
-    header := DOM
-    |> query("h1#grabbable.specific")
-    |> listen("burger", (el) => {
-        el |> set_text();
-    });
-
-    new_button := DOM
+    new_button := get_dom()
     |> create("button")
-    |> set_inner("Click me!")
-    |> append(body)
-    |> click((el) => {
-        el |> set_text("I was clicked...");
-    })
-    |> set_color("red")
-    |> set_width("100px");
-
-    h1s := get_dom()
-    |> query_all("h1")
-    |> batch((h1) => {
-        h1 |> click((el) => {
-            console_log("Clicked!");
-        }); 
+    |> set_inner("Increment")
+    |> append(get_body())
+    |> click((el, [count]) => {
+        count->set(count->get()->unwrap() + 1);
     });
 
 }

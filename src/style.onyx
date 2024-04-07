@@ -2,16 +2,27 @@ package style
 
 use core.js
 
+
+/// This function retrieves the value of a specific style attribute from an element.
+/// - el: The element from which to retrieve the style attribute.
+/// - attr: The name of the style attribute to retrieve.
 get_style :: (el: js.Value, attr: str) -> js.Value {
     e := el->get("style")->get(attr);
     return e;
 }
 
+/// This function sets the value of a specific style attribute for an element.
+/// - el: The element for which to set the style attribute.
+/// - attr: The name of the style attribute to set.
+/// - val: The value to set for the style attribute.
 set_style :: (el: js.Value, attr: str, val: str) -> js.Value {
     el->get("style")->set(attr, val);
     return el;
 }
 
+/// This function removes the value of a specific style attribute from an element.
+/// - el: The element from which to remove the style attribute.
+/// - attr: The name of the style attribute to remove.
 remove_style :: (el: js.Value, attr: str) -> js.Value {
     el->get("style")->set(attr, "");
     return el;
@@ -19,24 +30,36 @@ remove_style :: (el: js.Value, attr: str) -> js.Value {
 
 // style helpers {{{
 
-    set_display :: (el: js.Value, val: str) -> js.Value {
-        el |> set_style("display", val);
-        return el;
-    }
+/// This helper function sets the display style attribute for an element.
+/// - el: The element for which to set the display style attribute.
+/// - val: The value to set for the display style attribute.
+set_display :: (el: js.Value, val: str) -> js.Value {
+    el |> set_style("display", val);
+    return el;
+}
 
-    set_color :: (el: js.Value, color: str) -> js.Value {
-        el |> set_style("color", color);
-        return el;
-    }
+/// This helper function sets the color style attribute for an element.
+/// - el: The element for which to set the color style attribute.
+/// - color: The value to set for the color style attribute.
+set_color :: (el: js.Value, color: str) -> js.Value {
+    el |> set_style("color", color);
+    return el;
+}
 
-    set_height :: (el: js.Value, val: str) -> js.Value{
-        el |> set_style("height", val);
-        return el;
-    }
+/// This helper function sets the height style attribute for an element.
+/// - el: The element for which to set the height style attribute.
+/// - val: The value to set for the height style attribute.
+set_height :: (el: js.Value, val: str) -> js.Value{
+    el |> set_style("height", val);
+    return el;
+}
 
-    set_width :: (el: js.Value, val: str) -> js.Value{
-        el |> set_style("width", val);
-        return el;
-    }
+/// This helper function sets the width style attribute for an element.
+/// - el: The element for which to set the width style attribute.
+/// - val: The value to set for the width style attribute.
+set_width :: (el: js.Value, val: str) -> js.Value{
+    el |> set_style("width", val);
+    return el;
+}
 
 // style helpers }}}

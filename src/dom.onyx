@@ -6,43 +6,64 @@ use core {
     tprintf
 }
 
+ElementCollection :: #distinct js.Value
 
+/// Returns the global document object.
 get_dom :: () => {
     return js.Global->get("document");
 }
 
+/// Returns the body element of the document.
 get_body :: () => {
     return get_dom()->get("body");
 }
 
+/// Returns the head element of the document.
 get_head :: () => {
     return get_dom()->get("head");
 }
 
+/// Creates a new element with the specified tag name and appends it to the given parent element.
+/// - `dom`: The parent element.
+/// - `new_el`: The tag name of the new element. Default is "div".
 create :: (dom: js.Value, new_el: str = "div") -> js.Value {
     el := dom->call("createElement", new_el);
     return el;
 }
 
+/// Removes the specified element from the DOM.
+/// - `el`: The element to be removed.
 remove :: (el: js.Value) {
     el->call("remove");
 }
 
+/// Appends the specified element to the given parent element.
+/// - `el`: The element to be appended.
+/// - `target`: The parent element.
 append :: (el: js.Value, target: js.Value) -> js.Value {
     target->call("appendChild", el);
     return el;
 }
 
+///Prepends the specified element to the given parent element.
+/// - `el`: The element to be prepended.
+/// - `target`: The parent element.
 prepend :: (el: js.Value, target: js.Value) -> js.Value {
     target->call("prepend", el);
     return el;
 }
 
+/// Appends the specified target element to the given element.
+/// - `el`: The element to which the target element will be appended.
+/// - `target`: The target element to be appended.
 grab :: (el: js.Value, target: js.Value) -> js.Value {
     el->call("appendChild", target);
     return el;
 }
 
+/// Sets the inner HTML of the specified element.
+/// - `el`: The element to set the inner HTML of.
+/// - `args`: The values to be formatted and set as the inner HTML.
 set_inner :: (el: js.Value, args: ..any) -> js.Value {
     result: dyn_str;
     defer delete(&result);
@@ -55,16 +76,24 @@ set_inner :: (el: js.Value, args: ..any) -> js.Value {
     return el;
 }
 
+/// Returns the inner HTML of the specified element.
+/// - `el`: The element to get the inner HTML of.
 get_inner :: (el: js.Value) -> str {
     inner := el->get("innerHTML");
     return inner->as_str()->unwrap();
 }
 
+/// Swaps the inner HTML of the specified element with the inner HTML of the target element.
+/// - `el`: The element to swap the inner HTML of.
+/// - `target`: The target element to swap the inner HTML with.
 swap_inner :: (el: js.Value, target: js.Value) -> js.Value {
     el->set("innerHTML", target->get("innerHTML"));
     return el;
 }
 
+/// Sets the outer HTML of the specified element.
+/// - `el`: The element to set the outer HTML of.
+/// - `args`: The values to be formatted and set as the outer HTML.
 set_outer :: (el: js.Value, args: ..any) -> js.Value {
     result: dyn_str;
     defer delete(&result);
@@ -77,16 +106,24 @@ set_outer :: (el: js.Value, args: ..any) -> js.Value {
     return el;
 }
 
+/// Returns the outer HTML of the specified element.
+/// - `el`: The element to get the outer HTML of.
 get_outer :: (el: js.Value) -> str {
     outer := el->get("outerHTML");
     return outer->as_str()->unwrap();
 }
 
+/// Swaps the outer HTML of the specified element with the outer HTML of the target element.
+/// - `el`: The element to swap the outer HTML of.
+/// - `target`: The target element to swap the outer HTML with.
 swap_outer :: (el: js.Value, target: js.Value) -> js.Value {
     el->set("outerHTML", target->get("outerHTML"));
     return el;
 }
 
+/// Sets the text content of the specified element.
+/// - `el`: The element to set the text content of.
+/// - `args`: The values to be formatted and set as the text content.
 set_text :: (el: js.Value, args: ..any) -> js.Value {
     result: dyn_str;
     defer delete(&result);
@@ -99,139 +136,213 @@ set_text :: (el: js.Value, args: ..any) -> js.Value {
     return el;
 }
 
+/// Returns the text content of the specified element.
+/// - `el`: The element to get the text content of.
 get_text :: (el: js.Value) -> str {
     text := el->get("textContent");
     return text->as_str()->unwrap();
 }
 
+/// Swaps the text content of the specified element with the text content of the target element.
+/// - `el`: The element to swap the text content of.
+/// - `target`: The target element to swap the text content with.
 swap_text :: (el: js.Value, target: js.Value) -> js.Value {
     el->set("textContent", target->get("textContent"));
     return el;
 }
 
+/// Queries the document for the first element that matches the specified selector.
+/// - `dom`: The document to query.
+/// - `new_el`: The selector to match.
 query :: (dom: js.Value, new_el: str) -> js.Value {
     el := dom->call("querySelector", new_el);
     return el;
 }
 
-query_all :: (dom: js.Value, new_el: str) -> js.Value {
+/// Queries the document for all elements that match the specified selector.
+/// - `dom`: The document to query.
+/// - `new_el`: The selector to match.
+query_all :: (dom: js.Value, new_el: str) -> ElementCollection {
     el:= dom->call("querySelectorAll", new_el);
-    return el;
+    return cast(ElementCollection) el;
 }
 
-batch :: (els: js.Value, fn: (js.Value) -> void) -> js.Value {
-    for i in els->length() {
-        fn(els->index(i));
+/// Returns the children of the specified element.
+/// - `el`: The element to get the children of.
+get_children :: (el: js.Value) -> ElementCollection {
+    children := el->get("children");
+    return cast(ElementCollection) children;
+}
+
+/// Applies the specified function to each element in the given collection of elements.
+/// - `els`: The collection of elements.
+/// - `fn`: The function to apply to each element.
+batch :: (els: ElementCollection, fn: (js.Value) -> void) -> ElementCollection {
+    _els := cast(js.Value) els;
+    for i in _els->length() {
+        fn(_els->index(i));
     }
     return els;
 }
 
 // id {{{
 
-        query_id :: (dom: js.Value, new_el: str) -> js.Value {
-            el := dom->call("getElementById", new_el);
-            return el;
-        }
+/// Queries the document for the element with the specified ID.
+/// - `dom`: The document to query.
+/// - `new_el`: The ID of the element to find.
+query_id :: (dom: js.Value, new_el: str) -> js.Value {
+    el := dom->call("getElementById", new_el);
+    return el;
+}
 
-        set_id :: (el: js.Value, new_id: $T) -> js.Value {
-            el->call("setAttribute", "id", tprintf("{}", new_id));
-            return el;
-        }
+/// Sets the ID of the specified element.
+/// - `el`: The element to set the ID of.
+/// - `new_id`: The new ID value.
+set_id :: (el: js.Value, new_id: $T) -> js.Value {
+    el->call("setAttribute", "id", tprintf("{}", new_id));
+    return el;
+}
 
-        remove_id :: (el: js.Value) -> js.Value {
-            el->call("removeAttribute", "id");
-            return el;
-        }
+/// Removes the ID attribute from the specified element.
+/// - `el`: The element to remove the ID attribute from.
+remove_id :: (el: js.Value) -> js.Value {
+    el->call("removeAttribute", "id");
+    return el;
+}
 
-        get_id :: (el: js.Value) -> str {
-            id := el->get("id");
-            return id->as_str()->unwrap();
-        }
-    
+/// Returns the ID of the specified element.
+/// - `el`: The element to get the ID of.
+get_id :: (el: js.Value) -> str {
+    id := el->get("id");
+    return id->as_str()->unwrap();
+}
+
 // id }}}
 
 // class {{{
 
-        query_class :: (dom: js.Value, new_el: str) -> js.Value {
-            el := dom->call("querySelector", str.concat(context.allocator, ".", new_el));
-            return el;
-        }
+    /// Queries the document for the first element that has the specified class.
+    /// - `dom`: The document to query.
+    /// - `new_el`: The class name to match.
+    query_class :: (dom: js.Value, new_el: str) -> js.Value {
+        el := dom->call("querySelector", str.concat(context.allocator, ".", new_el));
+        return el;
+    }
 
-        query_all_class :: (dom: js.Value, new_el: str) -> #auto {
-            el := dom->call("getElementsByClassName", new_el);
-            return el;
-        }
+    /// Queries the document for all elements that have the specified class.
+    /// - `dom`: The document to query.
+    /// - `new_el`: The class name to match.
+    query_all_class :: (dom: js.Value, new_el: str) -> ElementCollection {
+        el := dom->call("getElementsByClassName", new_el);
+        return cast(ElementCollection) el;
+    }
 
-        set_class :: (el: js.Value, new_class: $T) -> js.Value {
-            el->call("setAttribute", "class", tprintf("{}", new_class));
-            return el;
-        }
+    /// Sets the class attribute of the specified element.
+    /// - `el`: The element to set the class attribute of.
+    /// - `new_class`: The new class value.
+    set_class :: (el: js.Value, new_class: $T) -> js.Value {
+        el->call("setAttribute", "class", tprintf("{}", new_class));
+        return el;
+    }
 
-        add_class :: (el: js.Value, new_class: $T) -> js.Value {
-            el->get("classList")->call("add", tprintf("{}", new_class));
-            return el;
-        }
+    /// Adds the specified class to the class list of the specified element.
+    /// - `el`: The element to add the class to.
+    /// - `new_class`: The class to add.
+    add_class :: (el: js.Value, new_class: $T) -> js.Value {
+        el->get("classList")->call("add", tprintf("{}", new_class));
+        return el;
+    }
 
-        remove_class :: (el: js.Value, new_class: $T) -> js.Value {
-            el->get("classList")->call("remove", tprintf("{}", new_class));
-            return el;
-        }
+    /// Removes the specified class from the class list of the specified element.
+    /// - `el`: The element to remove the class from.
+    /// - `new_class`: The class to remove.
+    remove_class :: (el: js.Value, new_class: $T) -> js.Value {
+        el->get("classList")->call("remove", tprintf("{}", new_class));
+        return el;
+    }
 
-        toggle_class :: (el: js.Value, new_class: $T) -> js.Value {
-            el->get("classList")->call("toggle", tprintf("{}", new_class));
-            return el;
-        }
+    /// Toggles the specified class in the class list of the specified element.
+    /// - `el`: The element to toggle the class in.
+    /// - `new_class`: The class to toggle.
+    toggle_class :: (el: js.Value, new_class: $T) -> js.Value {
+        el->get("classList")->call("toggle", tprintf("{}", new_class));
+        return el;
+    }
 
-        get_class :: (el: js.Value) -> str {
-                class := el->get("className");
-                return class->as_str()->unwrap();
-        }
+    /// Returns the class attribute of the specified element.
+    /// - `el`: The element to get the class attribute of.
+    get_class :: (el: js.Value) -> str {
+        class := el->get("className");
+        return class->as_str()->unwrap();
+    }
 
-// class }}}
+    // class }}}
 
-// attr {{{
+    // attr {{{
 
-        query_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
-            new_val := tprintf("{}", val);
-            new_attr := tprintf("{}", attr);
-            input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
-            el := dom->call("querySelector", input);
-            return el;
-        }
-        
-        query_all_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
-            new_val := tprintf("{}", val);
-            new_attr := tprintf("{}", attr);
-            input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
-            el := dom->call("querySelectorAll", input);
-            return el;
-        }
+    /// Queries the document for the first element that has the specified attribute with the specified value.
+    /// - `dom`: The document to query.
+    /// - `attr`: The attribute name.
+    /// - `val`: The attribute value.
+    query_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
+        new_val := tprintf("{}", val);
+        new_attr := tprintf("{}", attr);
+        input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
+        el := dom->call("querySelector", input);
+        return el;
+    }
 
-        set_attr :: (el: js.Value, attr: str, val: $T) -> js.Value {
-            el->call("setAttribute", attr, tprintf("{}", val));
-            return el;
-        }
+    /// Queries the document for all elements that have the specified attribute with the specified value.
+    /// - `dom`: The document to query.
+    /// - `attr`: The attribute name.
+    /// - `val`: The attribute value.
+    query_all_attr :: (dom: js.Value, attr: $T, val: T) -> ElementCollection {
+        new_val := tprintf("{}", val);
+        new_attr := tprintf("{}", attr);
+        input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
+        el := dom->call("querySelectorAll", input);
+        return cast(ElementCollection) el;
+    }
 
-        remove_attr :: (el: js.Value, attr: str) -> js.Value {
-            el->call("removeAttribute", attr);
-            return el;
-        }
+    /// Sets the specified attribute of the specified element to the specified value.
+    /// - `el`: The element to set the attribute of.
+    /// - `attr`: The attribute name.
+    /// - `val`: The attribute value.
+    set_attr :: (el: js.Value, attr: str, val: $T) -> js.Value {
+        el->call("setAttribute", attr, tprintf("{}", val));
+        return el;
+    }
 
-        get_attr :: (el: js.Value, attr: str) -> str {
-            attribute := el->call("getAttribute", attr);
-            return attribute->as_str()->unwrap();
-        }
+    /// Removes the specified attribute from the specified element.
+    /// - `el`: The element to remove the attribute from.
+    /// - `attr`: The attribute name.
+    remove_attr :: (el: js.Value, attr: str) -> js.Value {
+        el->call("removeAttribute", attr);
+        return el;
+    }
 
-// attr }}}
+    /// Returns the value of the specified attribute of the specified element.
+    /// - `el`: The element to get the attribute value from.
+    /// - `attr`: The attribute name.
+    get_attr :: (el: js.Value, attr: str) -> str {
+        attribute := el->call("getAttribute", attr);
+        return attribute->as_str()->unwrap();
+    }
 
-// misc {{{
+    // attr }}}
 
-        alert :: (msg: any) {
-            js.Global->call("alert", tprintf("{}", msg));
-        }
+    // misc {{{
 
-        console_log :: (msg: $T) {
-            js.Global->get("console")->call("log", tprintf("{}", msg));
-        }
+    /// Displays an alert dialog with the specified message.
+    /// - `msg`: The message to display.
+    alert :: (msg: any) {
+        js.Global->call("alert", tprintf("{}", msg));
+    }
 
-// misc }}}
+    /// Logs the specified message to the console.
+    /// - `msg`: The message to log.
+    console_log :: (msg: $T) {
+        js.Global->get("console")->call("log", tprintf("{}", msg));
+    }
+
+    // misc }}}

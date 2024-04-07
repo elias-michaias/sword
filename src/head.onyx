@@ -8,6 +8,11 @@ use core {
     tprintf
 }
 
+
+/// Sets the meta tag with the specified name and content.
+/// If a meta tag with the same name already exists, its content will be updated.
+/// - `name`: The name attribute of the meta tag.
+/// - `content`: The content attribute of the meta tag.
 set_meta :: (name: str, content: str) {
     _meta := get_head()
     |> query_attr("name", name);
@@ -23,6 +28,9 @@ set_meta :: (name: str, content: str) {
     }
 }
 
+/// Retrieves the content of the meta tag with the specified name.
+/// If the meta tag does not exist, an empty string is returned.
+/// - `name`: The name attribute of the meta tag.
 get_meta :: (name: str) -> str {
     _meta := get_head()
     |> query_attr("name", name);
@@ -33,6 +41,8 @@ get_meta :: (name: str) -> str {
     }
 }
 
+/// Removes the meta tag with the specified name.
+/// - `name`: The name attribute of the meta tag.
 remove_meta :: (name: str) {
     _meta := get_head()
     |> query_attr("name", name);
@@ -41,6 +51,9 @@ remove_meta :: (name: str) {
     }
 }
 
+/// Sets the title of the HTML document.
+/// If a title tag already exists, its content will be updated.
+/// - `title`: The title of the HTML document.
 set_title :: (title: str) {
     _title := get_head()
     |> query("title");
@@ -55,6 +68,8 @@ set_title :: (title: str) {
     }
 }
 
+/// Retrieves the content of the title tag of the HTML document.
+/// If the title tag does not exist, an empty string is returned.
 get_title :: () -> str {
     _title := get_head()
     |> query("title");
