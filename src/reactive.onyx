@@ -8,6 +8,7 @@ use core.misc {any_as}
 use core.intrinsics.types {type_is_function}
 
 // init {{{
+
 Runtime :: struct {
     signal_values: [..] any;
     running_effect: ? u32;
@@ -25,6 +26,7 @@ reactive_runtime: Runtime;
     r.effect_arena = alloc.arena.make(context.allocator, 16 * 1024);
     reactive_runtime = r;
 }
+
 // init }}}
 
 // reaction logic {{{
@@ -69,6 +71,19 @@ Signal.get :: (self: #Self) -> self.T {
     return *any_as(v, self.T); 
 }
 
+Signal.get_as_type :: (s: rawptr, type: type_expr) -> any {
+    Untyped_Signal :: struct {
+        cx: &Runtime;
+        id: u32;
+    }
+    us := cast(&Untyped_Signal) s;
+    us.cx.running_effect->with([ef] {
+        subs := us.cx.signal_subscribers->get_ptr_or_create(us.id);
+        subs->insert(ef);
+    });
+    return us.cx.signal_values[us.id];
+}
+
 Signal.set :: (self: #Self, value: self.T) {
     v := &self.cx.signal_values[self.id];
     if v.type != self.T do return;
@@ -92,10 +107,45 @@ Signal.set :: (self: #Self, value: self.T) {
 
 // dom integration {{{
 
-// Culprit of infinite resolution
-// react_inner :: (el: js.Value, signal: Signal($T)) -> js.Value {
+// react_inner :: (el: js.Value, args: ..any) -> js.Value {
+//     arglist: [];
+//     use runtime.info;
+//     for arg in args {
+//         if info.struct_constructed_from(arg.type, Signal) {
+//             arglist->push(arg);
+//         }
+//     }
+
+//     effect(([arglist, el]) => {
+//         result: dyn_str;
+//         defer delete(&result);
+    
+//         use runtime.info;
+//         for arg in args {
+//             if info.struct_constructed_from(arg.type, Signal) {
+//                 signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
+//                 conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
+//             } else {
+//                 conv.format_va(&result, "{}", any.[ arg ]);
+//             }
+//         }
+
+//         el->set("innerHTML", cast(str) result);
+//     });
+
+//     return el;
+// }
+
+// react_outer :: (el: js.Value, signal: Signal($T)) -> js.Value {
 //     effect(([signal, el]) => {
-//         el |> set_inner(signal->get());
+//         el |> set_outer(signal->get());
+//     });
+//     return el;
+// }
+
+// react_text :: (el: js.Value, signal: Signal($T)) -> js.Value {
+//     effect(([signal, el]) => {
+//         el |> set_text(signal->get());
 //     });
 //     return el;
 // }

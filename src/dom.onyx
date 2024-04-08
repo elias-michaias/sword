@@ -6,6 +6,9 @@ use core {
     tprintf
 }
 
+#load "./reactive.onyx"
+use reactive {*}
+
 ElementCollection :: #distinct js.Value
 
 /// Returns the global document object.
@@ -68,8 +71,14 @@ set_inner :: (el: js.Value, args: ..any) -> js.Value {
     result: dyn_str;
     defer delete(&result);
     
+    use runtime.info;
     for arg in args {
-        conv.format_va(&result, "{}", any.[ arg ]);
+        if info.struct_constructed_from(arg.type, Signal) {
+            signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
+            conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
+        } else {
+            conv.format_va(&result, "{}", any.[ arg ]);
+        }
     }
 
     el->set("innerHTML", cast(str) result);
