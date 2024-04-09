@@ -20,7 +20,6 @@ use core.js
 main :: () {
 
     count := signal(0);
-    bruh := signal("FARTS");
 
     counter_h1 := get_dom()
     |> query("h1#counter")
@@ -30,7 +29,7 @@ main :: () {
     |> create("button")
     |> set_inner("Increment")
     |> append(get_body())
-    |> click((el, [count]) => {
+    |> click(([count]) => {
         count->set(count->get() + 1);
     });
 

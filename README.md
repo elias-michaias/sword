@@ -7,20 +7,17 @@ Sword is still in very early development.
 ```fsharp
 main :: () {
 
-    counter_h1 := get_dom()
-    |> query("h1#counter");
-    
     count := signal(0);
 
-    effect(([count, counter_h1]) => {
-        counter_h1 |> set_text(count->get());
-    });
+    counter_h1 := get_dom()
+    |> query("h1#counter")
+    |> react_inner("Count: ", count);
 
     new_button := get_dom()
     |> create("button")
     |> set_inner("Increment")
     |> append(get_body())
-    |> click((el, [count]) => {
+    |> click(([count]) => {
         count->set(count->get() + 1);
     });
 

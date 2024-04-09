@@ -4,7 +4,7 @@ package reactive
 use dom {*}
 
 use core {*}
-use core.misc {any_as}
+use core.misc {*}
 use core.intrinsics.types {type_is_function}
 
 // init {{{
@@ -107,48 +107,65 @@ Signal.set :: (self: #Self, value: self.T) {
 
 // dom integration {{{
 
-// react_inner :: (el: js.Value, args: ..any) -> js.Value {
-//     arglist: [];
-//     use runtime.info;
-//     for arg in args {
-//         if info.struct_constructed_from(arg.type, Signal) {
-//             arglist->push(arg);
-//         }
-//     }
+react_inner :: (el: js.Value, args_: ..any) -> js.Value {
+    args := any_deep_copy(args_);
+    effect(([el, args]) => {
+        result: dyn_str;
+        use runtime.info;
 
-//     effect(([arglist, el]) => {
-//         result: dyn_str;
-//         defer delete(&result);
-    
-//         use runtime.info;
-//         for arg in args {
-//             if info.struct_constructed_from(arg.type, Signal) {
-//                 signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
-//                 conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
-//             } else {
-//                 conv.format_va(&result, "{}", any.[ arg ]);
-//             }
-//         }
+        for arg in args {
+            if info.struct_constructed_from(arg.type, Signal) {
+                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
+                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
+            } else {
+                conv.format_va(&result, "{}", any.[ arg ]);
+            }
+        }
+        el->set("innerHTML", cast(str) result);
+    });
 
-//         el->set("innerHTML", cast(str) result);
-//     });
+    return el;
+}
 
-//     return el;
-// }
+react_outer :: (el: js.Value, args_: ..any) -> js.Value {
+    args := any_deep_copy(args_);
+    effect(([el, args]) => {
+        result: dyn_str;
+        use runtime.info;
 
-// react_outer :: (el: js.Value, signal: Signal($T)) -> js.Value {
-//     effect(([signal, el]) => {
-//         el |> set_outer(signal->get());
-//     });
-//     return el;
-// }
+        for arg in args {
+            if info.struct_constructed_from(arg.type, Signal) {
+                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
+                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
+            } else {
+                conv.format_va(&result, "{}", any.[ arg ]);
+            }
+        }
+        el->set("outerHTML", cast(str) result);
+    });
 
-// react_text :: (el: js.Value, signal: Signal($T)) -> js.Value {
-//     effect(([signal, el]) => {
-//         el |> set_text(signal->get());
-//     });
-//     return el;
-// }
+    return el;
+}
+
+react_text :: (el: js.Value, args_: ..any) -> js.Value {
+    args := any_deep_copy(args_);
+    effect(([el, args]) => {
+        result: dyn_str;
+        use runtime.info;
+
+        for arg in args {
+            if info.struct_constructed_from(arg.type, Signal) {
+                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
+                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
+            } else {
+                conv.format_va(&result, "{}", any.[ arg ]);
+            }
+        }
+        el->set("textContent", cast(str) result);
+    });
+
+    return el;
+}
 
 // dom integration }}}
  
