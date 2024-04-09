@@ -1,4 +1,4 @@
 dist/app.wasm
 dist/server.wasm
-dist/app.js
+dist/app.wasm.js
 lib
