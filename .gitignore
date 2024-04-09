@@ -1,2 +1,4 @@
-out.wasm
-out.wasm.js
+dist/app.wasm
+dist/server.wasm
+dist/app.js
+lib

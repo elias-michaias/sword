@@ -11,11 +11,28 @@ config {
     dependency_binary_path "./bin" 
 }
 
+dependencies {
+    "https://github.com/onyx-lang/pkg-http-server" "0.3.6" git="https://github.com/onyx-lang/pkg-http-server" 
+}
+
 lsp {
     mode "project" 
-    source_files "src/main.onyx" 
+    source_files "./main.onyx" 
     runtime "js" 
     include_dirs "" 
     working_dir "." 
+}
+
+build {
+    client {
+        runtime "js" 
+        source "./main.onyx" 
+        target "./dist/app.wasm" 
+    }
+    server {
+        runtime "onyx" 
+        source "./server.onyx" 
+        target "./dist/server.wasm" 
+    }
 }
 

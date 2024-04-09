@@ -186,10 +186,10 @@ get_children :: (el: js.Value) -> ElementCollection {
 /// Applies the specified function to each element in the given collection of elements.
 /// - `els`: The collection of elements.
 /// - `fn`: The function to apply to each element.
-batch :: (els: ElementCollection, fn: (js.Value) -> void) -> ElementCollection {
+batch :: (els: ElementCollection, fn: (js.Value, i32) -> void) -> ElementCollection {
     _els := cast(js.Value) els;
     for i in _els->length() {
-        fn(_els->index(i));
+        fn(_els->index(i), i);
     }
     return els;
 }
@@ -230,128 +230,128 @@ get_id :: (el: js.Value) -> str {
 
 // class {{{
 
-    /// Queries the document for the first element that has the specified class.
-    /// - `dom`: The document to query.
-    /// - `new_el`: The class name to match.
-    query_class :: (dom: js.Value, new_el: str) -> js.Value {
-        el := dom->call("querySelector", str.concat(context.allocator, ".", new_el));
-        return el;
-    }
+/// Queries the document for the first element that has the specified class.
+/// - `dom`: The document to query.
+/// - `new_el`: The class name to match.
+query_class :: (dom: js.Value, new_el: str) -> js.Value {
+    el := dom->call("querySelector", str.concat(context.allocator, ".", new_el));
+    return el;
+}
 
-    /// Queries the document for all elements that have the specified class.
-    /// - `dom`: The document to query.
-    /// - `new_el`: The class name to match.
-    query_all_class :: (dom: js.Value, new_el: str) -> ElementCollection {
-        el := dom->call("getElementsByClassName", new_el);
-        return cast(ElementCollection) el;
-    }
+/// Queries the document for all elements that have the specified class.
+/// - `dom`: The document to query.
+/// - `new_el`: The class name to match.
+query_all_class :: (dom: js.Value, new_el: str) -> ElementCollection {
+    el := dom->call("getElementsByClassName", new_el);
+    return cast(ElementCollection) el;
+}
 
-    /// Sets the class attribute of the specified element.
-    /// - `el`: The element to set the class attribute of.
-    /// - `new_class`: The new class value.
-    set_class :: (el: js.Value, new_class: $T) -> js.Value {
-        el->call("setAttribute", "class", tprintf("{}", new_class));
-        return el;
-    }
+/// Sets the class attribute of the specified element.
+/// - `el`: The element to set the class attribute of.
+/// - `new_class`: The new class value.
+set_class :: (el: js.Value, new_class: $T) -> js.Value {
+    el->call("setAttribute", "class", tprintf("{}", new_class));
+    return el;
+}
 
-    /// Adds the specified class to the class list of the specified element.
-    /// - `el`: The element to add the class to.
-    /// - `new_class`: The class to add.
-    add_class :: (el: js.Value, new_class: $T) -> js.Value {
-        el->get("classList")->call("add", tprintf("{}", new_class));
-        return el;
-    }
+/// Adds the specified class to the class list of the specified element.
+/// - `el`: The element to add the class to.
+/// - `new_class`: The class to add.
+add_class :: (el: js.Value, new_class: $T) -> js.Value {
+    el->get("classList")->call("add", tprintf("{}", new_class));
+    return el;
+}
 
-    /// Removes the specified class from the class list of the specified element.
-    /// - `el`: The element to remove the class from.
-    /// - `new_class`: The class to remove.
-    remove_class :: (el: js.Value, new_class: $T) -> js.Value {
-        el->get("classList")->call("remove", tprintf("{}", new_class));
-        return el;
-    }
+/// Removes the specified class from the class list of the specified element.
+/// - `el`: The element to remove the class from.
+/// - `new_class`: The class to remove.
+remove_class :: (el: js.Value, new_class: $T) -> js.Value {
+    el->get("classList")->call("remove", tprintf("{}", new_class));
+    return el;
+}
 
-    /// Toggles the specified class in the class list of the specified element.
-    /// - `el`: The element to toggle the class in.
-    /// - `new_class`: The class to toggle.
-    toggle_class :: (el: js.Value, new_class: $T) -> js.Value {
-        el->get("classList")->call("toggle", tprintf("{}", new_class));
-        return el;
-    }
+/// Toggles the specified class in the class list of the specified element.
+/// - `el`: The element to toggle the class in.
+/// - `new_class`: The class to toggle.
+toggle_class :: (el: js.Value, new_class: $T) -> js.Value {
+    el->get("classList")->call("toggle", tprintf("{}", new_class));
+    return el;
+}
 
-    /// Returns the class attribute of the specified element.
-    /// - `el`: The element to get the class attribute of.
-    get_class :: (el: js.Value) -> str {
-        class := el->get("className");
-        return class->as_str()->unwrap();
-    }
+/// Returns the class attribute of the specified element.
+/// - `el`: The element to get the class attribute of.
+get_class :: (el: js.Value) -> str {
+    class := el->get("className");
+    return class->as_str()->unwrap();
+}
 
-    // class }}}
+// class }}}
 
-    // attr {{{
+// attr {{{
 
-    /// Queries the document for the first element that has the specified attribute with the specified value.
-    /// - `dom`: The document to query.
-    /// - `attr`: The attribute name.
-    /// - `val`: The attribute value.
-    query_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
-        new_val := tprintf("{}", val);
-        new_attr := tprintf("{}", attr);
-        input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
-        el := dom->call("querySelector", input);
-        return el;
-    }
+/// Queries the document for the first element that has the specified attribute with the specified value.
+/// - `dom`: The document to query.
+/// - `attr`: The attribute name.
+/// - `val`: The attribute value.
+query_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
+    new_val := tprintf("{}", val);
+    new_attr := tprintf("{}", attr);
+    input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
+    el := dom->call("querySelector", input);
+    return el;
+}
 
-    /// Queries the document for all elements that have the specified attribute with the specified value.
-    /// - `dom`: The document to query.
-    /// - `attr`: The attribute name.
-    /// - `val`: The attribute value.
-    query_all_attr :: (dom: js.Value, attr: $T, val: T) -> ElementCollection {
-        new_val := tprintf("{}", val);
-        new_attr := tprintf("{}", attr);
-        input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
-        el := dom->call("querySelectorAll", input);
-        return cast(ElementCollection) el;
-    }
+/// Queries the document for all elements that have the specified attribute with the specified value.
+/// - `dom`: The document to query.
+/// - `attr`: The attribute name.
+/// - `val`: The attribute value.
+query_all_attr :: (dom: js.Value, attr: $T, val: T) -> ElementCollection {
+    new_val := tprintf("{}", val);
+    new_attr := tprintf("{}", attr);
+    input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
+    el := dom->call("querySelectorAll", input);
+    return cast(ElementCollection) el;
+}
 
-    /// Sets the specified attribute of the specified element to the specified value.
-    /// - `el`: The element to set the attribute of.
-    /// - `attr`: The attribute name.
-    /// - `val`: The attribute value.
-    set_attr :: (el: js.Value, attr: str, val: $T) -> js.Value {
-        el->call("setAttribute", attr, tprintf("{}", val));
-        return el;
-    }
+/// Sets the specified attribute of the specified element to the specified value.
+/// - `el`: The element to set the attribute of.
+/// - `attr`: The attribute name.
+/// - `val`: The attribute value.
+set_attr :: (el: js.Value, attr: str, val: $T) -> js.Value {
+    el->call("setAttribute", attr, tprintf("{}", val));
+    return el;
+}
 
-    /// Removes the specified attribute from the specified element.
-    /// - `el`: The element to remove the attribute from.
-    /// - `attr`: The attribute name.
-    remove_attr :: (el: js.Value, attr: str) -> js.Value {
-        el->call("removeAttribute", attr);
-        return el;
-    }
+/// Removes the specified attribute from the specified element.
+/// - `el`: The element to remove the attribute from.
+/// - `attr`: The attribute name.
+remove_attr :: (el: js.Value, attr: str) -> js.Value {
+    el->call("removeAttribute", attr);
+    return el;
+}
 
-    /// Returns the value of the specified attribute of the specified element.
-    /// - `el`: The element to get the attribute value from.
-    /// - `attr`: The attribute name.
-    get_attr :: (el: js.Value, attr: str) -> str {
-        attribute := el->call("getAttribute", attr);
-        return attribute->as_str()->unwrap();
-    }
+/// Returns the value of the specified attribute of the specified element.
+/// - `el`: The element to get the attribute value from.
+/// - `attr`: The attribute name.
+get_attr :: (el: js.Value, attr: str) -> str {
+    attribute := el->call("getAttribute", attr);
+    return attribute->as_str()->unwrap();
+}
 
-    // attr }}}
+// attr }}}
 
-    // misc {{{
+// misc {{{
 
-    /// Displays an alert dialog with the specified message.
-    /// - `msg`: The message to display.
-    alert :: (msg: any) {
-        js.Global->call("alert", tprintf("{}", msg));
-    }
+/// Displays an alert dialog with the specified message.
+/// - `msg`: The message to display.
+alert :: (msg: any) {
+    js.Global->call("alert", tprintf("{}", msg));
+}
 
-    /// Logs the specified message to the console.
-    /// - `msg`: The message to log.
-    console_log :: (msg: $T) {
-        js.Global->get("console")->call("log", tprintf("{}", msg));
-    }
+/// Logs the specified message to the console.
+/// - `msg`: The message to log.
+console_log :: (msg: $T) {
+    js.Global->get("console")->call("log", tprintf("{}", msg));
+}
 
-    // misc }}}
+// misc }}}

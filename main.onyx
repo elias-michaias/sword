@@ -19,18 +19,20 @@ use core.js
 
 main :: () {
 
-    count := signal(0);
+    todos: [..] Signal(i32);
 
-    counter_h1 := get_dom()
-    |> query("h1#counter")
-    |> react_inner("Count: ", count);
+    for 0 .. 5 {
+        todos->push(signal(it));
+    }
 
-    new_button := get_dom()
-    |> create("button")
-    |> set_inner("Increment")
-    |> append(get_body())
-    |> click(([count]) => {
-        count->set(count->get() + 1);
+    h1s := get_dom()
+    |> query_all("h1")
+    |> batch((el, i, [todos]) => {
+        el 
+        |> react_inner("Todo #", i+1, ": ", todos[i])
+        |> click((el, [todos, i]) => {
+            todos[i]->set(todos[i]->get() + 1);
+        });
     });
 
 }

@@ -1,0 +1,23 @@
+#load "./lib/packages.onyx"
+use http.server
+
+main :: () {
+    static := server.static("/static", "."); // Serve the current directory at `/static`.
+
+    router := server.router();
+
+    router->get("/", (req, res) => {
+        res->status(200);
+        res->file("./index.html");  
+    });
+
+    app := server.pipeline();
+    app->add(&static);
+    app->add(&router);
+
+    logger := server.logger(style=.V2);
+    app->add(&logger);
+
+    host := server.tcp(&app);
+    host->serve(8080);
+}
