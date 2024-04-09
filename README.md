@@ -23,3 +23,6 @@ main :: () {
 
 }
 ```
+
+## Installation:
+`onyx  add https://github.com/elias-michaias/sword`

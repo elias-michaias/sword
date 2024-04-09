@@ -1,18 +1,18 @@
 package main
 
-#load "./dom.onyx"
+#load "./src/dom.onyx"
 use dom {*}
 
-#load "./events.onyx"
+#load "./src/events.onyx"
 use events {*}
 
-#load "./head.onyx"
+#load "./src/head.onyx"
 use head {*}
 
-#load "./reactive.onyx"
+#load "./src/reactive.onyx"
 use reactive {*}
 
-#load "./style.onyx"
+#load "./src/style.onyx"
 use style {*}
 
 use core.js
