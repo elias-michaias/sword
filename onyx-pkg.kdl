@@ -3,7 +3,7 @@ package {
     author "elias-michaias" 
     url "https://github.com/elias-michaias/sword" 
     description "A fine-grained, functional, front-end framework for the web in Onyx." 
-    version "0.0.1" 
+    version "1.0.0" 
 }
 
 config {
@@ -12,9 +12,10 @@ config {
 }
 
 lsp {
-    mode "project"
-    source_files "src/main.onyx"
-    runtime "js"
-    include_dirs ""
-    working_dir "."
+    mode "project" 
+    source_files "src/main.onyx" 
+    runtime "js" 
+    include_dirs "" 
+    working_dir "." 
 }
+
