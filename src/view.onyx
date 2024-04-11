@@ -1,0 +1,14 @@
+package view
+
+#load "./dom.onyx"
+use dom {*}
+use core.js
+
+// div :: (class: str, id: str, args: ..any) -> js.Value {
+//     div := get_dom()
+//     |> create("div")
+//     |> set_class(class)
+//     |> set_id(id)
+//     |> grab(args);
+//     return div;
+// }

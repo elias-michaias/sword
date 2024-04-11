@@ -28,11 +28,13 @@ build {
         runtime "js" 
         source "./main.onyx" 
         target "./dist/app.wasm" 
+        args "--feature" "optional-semicolons" 
     }
     server {
         runtime "onyx" 
         source "./server.onyx" 
         target "./dist/server.wasm" 
+        args "--feature" "optional-semicolons" 
     }
 }
 

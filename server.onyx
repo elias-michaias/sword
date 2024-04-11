@@ -2,7 +2,7 @@
 use http.server
 
 main :: () {
-    static := server.static("/static", "."); // Serve the current directory at `/static`.
+    static := server.static("/static", ".");
 
     router := server.router();
 

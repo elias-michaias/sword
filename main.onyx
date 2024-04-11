@@ -15,24 +15,15 @@ use reactive {*}
 #load "./src/style.onyx"
 use style {*}
 
+#load "./src/view.onyx"
+use view {*}
+
 use core.js
 
 main :: () {
 
-    todos: [..] Signal(i32);
-
-    for 0 .. 5 {
-        todos->push(signal(it));
-    }
-
-    h1s := get_dom()
-    |> query_all("h1")
-    |> batch((el, i, [todos]) => {
-        el 
-        |> react_inner("Todo #", i+1, ": ", todos[i])
-        |> click((el, [todos, i]) => {
-            todos[i]->set(todos[i]->get() + 1);
-        });
-    });
+    // div("red", "special")
+    // |> set_text("Hello World!")
+    // |> append(get_body());
 
 }

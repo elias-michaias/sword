@@ -9,58 +9,68 @@ use core {
 #load "./reactive.onyx"
 use reactive {*}
 
-ElementCollection :: #distinct js.Value
+HTMLDocument :: #distinct js.Value
+HTMLElement :: #distinct js.Value
+HTMLElementCollection :: #distinct js.Value
 
 /// Returns the global document object.
-get_dom :: () => {
-    return js.Global->get("document");
+get_dom :: () -> HTMLDocument {
+    return cast(HTMLDocument) js.Global->get("document");
 }
 
 /// Returns the body element of the document.
-get_body :: () => {
-    return get_dom()->get("body");
+get_body :: () -> HTMLElement {
+    return cast(HTMLElement) js.Global->get("document")->get("body");
 }
 
 /// Returns the head element of the document.
-get_head :: () => {
-    return get_dom()->get("head");
+get_head :: () -> HTMLElement {
+    return cast(HTMLElement) js.Global->get("document")->get("head");
 }
 
 /// Creates a new element with the specified tag name and appends it to the given parent element.
 /// - `dom`: The parent element.
 /// - `new_el`: The tag name of the new element. Default is "div".
-create :: (dom: js.Value, new_el: str = "div") -> js.Value {
-    el := dom->call("createElement", new_el);
-    return el;
+create :: (dom: HTMLDocument, new_el: str = "div") -> HTMLElement {
+    _dom := cast(js.Value) dom;
+    el := _dom->call("createElement", new_el);
+    return cast(HTMLElement) el;
 }
 
 /// Removes the specified element from the DOM.
 /// - `el`: The element to be removed.
-remove :: (el: js.Value) {
-    el->call("remove");
+remove :: (el: HTMLElement) {
+    cast(js.Value) el->call("remove");
 }
 
 /// Appends the specified element to the given parent element.
 /// - `el`: The element to be appended.
 /// - `target`: The parent element.
-append :: (el: js.Value, target: js.Value) -> js.Value {
-    target->call("appendChild", el);
+append :: (el: HTMLElement, target: HTMLElement) -> HTMLElement {
+    cast(js.Value) target->call("appendChild", cast(js.Value) el);
     return el;
 }
 
 ///Prepends the specified element to the given parent element.
 /// - `el`: The element to be prepended.
 /// - `target`: The parent element.
-prepend :: (el: js.Value, target: js.Value) -> js.Value {
-    target->call("prepend", el);
+prepend :: (el: HTMLElement, target: HTMLElement) -> HTMLElement {
+    cast(js.Value) target->call("prepend", cast(js.Value) el);
     return el;
 }
 
-/// Appends the specified target element to the given element.
-/// - `el`: The element to which the target element will be appended.
-/// - `target`: The target element to be appended.
-grab :: (el: js.Value, target: js.Value) -> js.Value {
-    el->call("appendChild", target);
+/// Appends the specified elements and text to the given element.
+/// - `el`: The element to which the targets will be appended.
+/// - `targets`: The elements or text to be appended.
+grab :: (el: js.Value, targets: ..any) -> js.Value {
+    use runtime.info;
+    for target in targets {
+        if target.type == js.Value {
+            el->call("appendChild", any.[ target ]);
+        } else {
+            el->call("insertAdjacentText", "beforeend", conv.format_va("{}", any.[ target ]));
+        }
+    }
     return el;
 }
 
@@ -157,6 +167,11 @@ get_text :: (el: js.Value) -> str {
 /// - `target`: The target element to swap the text content with.
 swap_text :: (el: js.Value, target: js.Value) -> js.Value {
     el->set("textContent", target->get("textContent"));
+    return el;
+}
+
+insert_text :: (el: js.Value, text: $T) -> js.Value {
+    el->call("insertAdjacentText", "beforeend", tprintf("{}", text));
     return el;
 }
 
