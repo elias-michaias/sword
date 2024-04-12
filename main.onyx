@@ -20,10 +20,32 @@ use view {*}
 
 use core.js
 
+use core {
+    printf
+}
+
 main :: () {
 
-    // div("red", "special")
-    // |> set_text("Hello World!")
-    // |> append(get_body());
+    count := signal(0)
+
+    main_view := 
+
+        div (
+            div (class("test test2"), id("div")
+                "Click me!"
+            ) |> click (el => el |> set_text("Clicked!"))
+        ) 
+
+    |> append(get_body())
+
+    curried_view :=
+
+        div(class="test", id="curried") (
+            div(
+                "Hello :)"
+            )
+        )
+    
+    |> append(get_body())
 
 }

@@ -3,12 +3,43 @@ package view
 #load "./dom.onyx"
 use dom {*}
 use core.js
+use core {
+    tprintf
+}
 
-// div :: (class: str, id: str, args: ..any) -> js.Value {
-//     div := get_dom()
-//     |> create("div")
-//     |> set_class(class)
-//     |> set_id(id)
-//     |> grab(args);
-//     return div;
-// }
+ElementMessageClass :: #distinct str
+ElementMessageId :: #distinct str
+ElementMessageAttr :: #distinct str
+
+class :: (class_: $T) -> ElementMessageClass {   
+    return cast(ElementMessageClass, tprintf("{}", class_))
+}
+
+id :: (id_: $T) -> ElementMessageId {
+    return cast(ElementMessageId, tprintf("{}", id_))
+}
+
+attr :: (attr_: $T) -> ElementMessageAttr {
+    return cast(ElementMessageAttr, tprintf("{}", attr_))
+}
+
+div :: #match {
+    (args: ..any) -> js.Value {
+        new_el := get_dom() 
+        |> create("div")
+        |> grab(args)
+
+        return new_el
+    }
+    (class := "", id := "", attr := "") -> ((args: any) -> js.Value) {
+        return (args: any, [class, id, attr]) -> js.Value {
+            new_el := get_dom()
+            |> create("div")
+            |> set_class(class)
+            |> set_id(id)
+            |> grab(args)
+
+            return new_el
+        };
+    }
+}

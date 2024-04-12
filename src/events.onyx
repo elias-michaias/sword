@@ -17,9 +17,28 @@ click :: (el: $T, func: (T) -> void) -> #auto {
 }
 
 #overload
+click :: (el: $T, func: (T) -> js.Value) -> #auto {
+    el->call("addEventListener", "click", js.func((this, args, [el, func]) => {
+        func(el);
+        return js.Undefined;
+    }));
+    return el;
+}
+
+
+#overload
 click :: (el: $T, func: () -> void) -> #auto {
     el->call("addEventListener", "click", js.func((this, args, [el, func]) => {
         func();
+        return js.Undefined;
+    }));
+    return el;
+}
+
+#overload
+click :: (el: $T, func: () -> any) -> #auto {
+    el->call("addEventListener", "click", js.func((this, args, [el, func]) => {
+        func(el);
         return js.Undefined;
     }));
     return el;
