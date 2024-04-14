@@ -2,7 +2,13 @@ package view
 
 #load "./dom.onyx"
 use dom {*}
+
+#load "./reactive.onyx"
+use reactive {*}
+
 use core.js
+use core.misc {*}
+use core.conv
 use core {
     tprintf
 }
@@ -23,12 +29,61 @@ attr :: (attr_: $T) -> ElementMessageAttr {
     return cast(ElementMessageAttr, tprintf("{}", attr_))
 }
 
+view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
+    use runtime.info
+    // targets_ |> console_log()
+    // type |> console_log()
+    if !info.struct_constructed_from(targets_.type, Signal) {
+        switch type {
+            case js.Value {
+                *any_as(targets_, js.Value) |> append(el);
+            }
+            case ElementMessageId {
+                el |> set_id(tprintf("{}", cast(str) *any_as(targets_, ElementMessageId)));
+            }
+            case ElementMessageClass {
+                console_log("class!")
+                classes := cast(str) *any_as(targets_, ElementMessageClass) |> str.split(' ');
+                for class in classes {
+                    el |> add_class(class);
+                }
+            }
+            case ElementMessageAttr {
+                attrs := cast(str) *any_as(targets_, ElementMessageAttr) |> str.split(' ');
+                for attr in attrs {
+                    key_val := tprintf("{}", attr) |> str.split('=');
+                    el |> set_attr(key_val[0], key_val[1]);
+                }
+            }
+            case #default {
+                    text_content := *any_as(targets_, str);
+                    el->call("insertAdjacentText", "beforeend", text_content);
+            }
+
+        }
+    } else {
+        reactor := get_dom() 
+        |> create("span") 
+        |> append(el)
+        switch type {
+            case Signal(i32) {
+                    reactor |> react_inner(*any_as(targets_, Signal(i32)))
+            }
+            case Signal(str) {
+                    reactor |> react_inner(*any_as(targets_, Signal(str)))
+            }
+        }
+    }
+    return el;
+}
+
 div :: #match {
     (args: ..any) -> js.Value {
         new_el := get_dom() 
         |> create("div")
-        |> grab(args)
-
+        for arg in args {
+            new_el |> view_select(arg.type, arg);
+        }
         return new_el
     }
     (class := "", id := "", attr := "") -> ((args: any) -> js.Value) {
@@ -37,7 +92,7 @@ div :: #match {
             |> create("div")
             |> set_class(class)
             |> set_id(id)
-            |> grab(args)
+            // |> grab(args)
 
             return new_el
         };

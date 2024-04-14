@@ -18,34 +18,36 @@ use style {*}
 #load "./src/view.onyx"
 use view {*}
 
-use core.js
+Signal(i32).increment :: (self: #Self) {
+    self->set(self->get() + 1)
+}
 
-use core {
-    printf
+Signal(i32).decrement :: (self: #Self) {
+    self->set(self->get() - 1)
 }
 
 main :: () {
 
-    count := signal(0)
+    count := signal(9)
+    greet := signal("Hello ")
 
     main_view := 
-
         div (
-            div (class("test test2"), id("div")
-                "Click me!"
-            ) |> click (el => el |> set_text("Clicked!"))
-        ) 
-
-    |> append(get_body())
-
-    curried_view :=
-
-        div(class="test", id="curried") (
-            div(
-                "Hello :)"
+            id("main")
+            class("1 2 3")
+            attr("href=/ value=50")
+            greet
+            div (
+                "world!"
             )
-        )
-    
-    |> append(get_body())
+            count
+        ) 
+        |> click(([count]) => count->increment())
+        |> append(get_body())
 
 }
+
+
+
+
+
