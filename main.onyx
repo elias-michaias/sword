@@ -18,7 +18,15 @@ Signal(i32).decrement :: (self: #Self) {
 
 main :: () {
 
+    sum_square :: (x: i32) => ([x] y: i32) => ([x, y] z: i32) => x*x + y*y + z*z
+
+    test := sum_square(4)
+    
+    test(4)(2) |> console_log()
+
     count := signal(0)
+
+    reusable_attr_div := div(class="test curry", id="special", style="color: blue")
 
     main_view := 
         div (
@@ -32,9 +40,14 @@ main :: () {
                 style("color: red; font-size: 2em;")
                 "Count: ", count
             )
+            div(class="test curry", id="special", style="color: blue")(
+                "Curry test"
+            )
+            reusable_attr_div (
+                "Reusable div with same attributes"
+            )
         ) 
         |> append(get_body())
-
 }
 
 

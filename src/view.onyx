@@ -32,6 +32,13 @@ style :: (style_: $T) -> ElementMessageStyle {
     return cast(ElementMessageStyle, tprintf("{}", style_))
 }
 
+extend :: (el: js.Value, args: ..any) -> js.Value {
+    for arg in args {
+        el |> view_select(arg.type, arg);
+    }
+    return el;
+}
+
 view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
     use runtime.info
     if !info.struct_constructed_from(targets_.type, Signal) {
@@ -95,15 +102,36 @@ div :: #match {
         }
         return new_el
     }
-    (class := "", id := "", attr := "") -> ((args: any) -> js.Value) {
-        return (args: any, [class, id, attr]) -> js.Value {
+    (class := "", id := "", attr := "", style := "") => ([class, id, attr, style] args: ..any) -> js.Value {
             new_el := get_dom()
             |> create("div")
-            |> set_class(class)
-            |> set_id(id)
-            // |> grab(args)
+
+            if class != "" do new_el |> set_class(class)
+            
+            if id != "" do new_el |> set_id(id)
+
+            if attr != "" {
+                attrs := attr |> str.split(' ');
+                for attr_ in attrs {
+                    key_val := attr_ |> str.split('=');
+                    new_el |> set_attr(key_val[0], key_val[1]);
+                }
+            }
+
+            if style != "" {
+                styles := style |> str.split(';');
+                for style_ in styles {
+                    key_val := style_ |> str.split(':');
+                    key := key_val[0] |> str.strip_whitespace();
+                    val := key_val[1];
+                    new_el |> set_style(key, key_val[1]);
+                }
+            }
+
+            for arg in args {
+                new_el |> view_select(arg.type, arg);
+            }
 
             return new_el
-        };
     }
 }
