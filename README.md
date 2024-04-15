@@ -3,10 +3,10 @@ Sword is a **fine-grained, functional, front-end** framework for the web that le
 
 Sword is still in very early development.
 
-## Examples
-Here are some examples of Sword in action!
+# Examples
+Here are some examples of Sword in action:
 
-# DOM querying
+## DOM querying
 ```fsharp
 main :: () {
 
@@ -25,7 +25,7 @@ main :: () {
 }
 ```
 
-# View templating
+## View templating
 ```fsharp
     reusable_attr_div := div(class="curried" id="composable" style="color: blue")
 
@@ -55,7 +55,7 @@ main :: () {
         |> append(get_body())
 ```
 
-# Batch functions
+## Batch functions
 ```fsharp
     div(
         div()
