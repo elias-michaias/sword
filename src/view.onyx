@@ -1,10 +1,8 @@
 package view
 
-#load "./dom.onyx"
 use dom {*}
-
-#load "./reactive.onyx"
 use reactive {*}
+use style {*}
 
 use core.js
 use core.misc {*}
@@ -16,6 +14,7 @@ use core {
 ElementMessageClass :: #distinct str
 ElementMessageId :: #distinct str
 ElementMessageAttr :: #distinct str
+ElementMessageStyle :: #distinct str
 
 class :: (class_: $T) -> ElementMessageClass {   
     return cast(ElementMessageClass, tprintf("{}", class_))
@@ -29,10 +28,12 @@ attr :: (attr_: $T) -> ElementMessageAttr {
     return cast(ElementMessageAttr, tprintf("{}", attr_))
 }
 
+style :: (style_: $T) -> ElementMessageStyle {
+    return cast(ElementMessageStyle, tprintf("{}", style_))
+}
+
 view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
     use runtime.info
-    // targets_ |> console_log()
-    // type |> console_log()
     if !info.struct_constructed_from(targets_.type, Signal) {
         switch type {
             case js.Value {
@@ -55,9 +56,17 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
                     el |> set_attr(key_val[0], key_val[1]);
                 }
             }
+            case ElementMessageStyle {
+                styles := cast(str) *any_as(targets_, ElementMessageStyle) |> str.split(';');
+                for style in styles {
+                    key_val := tprintf("{}", style) |> str.split(':');
+                    key := key_val[0] |> str.strip_whitespace();
+                    val := key_val[1];
+                    el |> set_style(key, key_val[1]);
+                }
+            }
             case #default {
-                    text_content := *any_as(targets_, str);
-                    el->call("insertAdjacentText", "beforeend", text_content);
+                    el->call("insertAdjacentText", "beforeend", conv.format_va("{}", any.[targets_]));
             }
 
         }

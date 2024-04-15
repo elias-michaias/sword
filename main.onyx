@@ -1,21 +1,11 @@
 package main
 
-#load "./src/dom.onyx"
+#load_all "./src"
 use dom {*}
-
-#load "./src/events.onyx"
 use events {*}
-
-#load "./src/head.onyx"
 use head {*}
-
-#load "./src/reactive.onyx"
 use reactive {*}
-
-#load "./src/style.onyx"
 use style {*}
-
-#load "./src/view.onyx"
 use view {*}
 
 Signal(i32).increment :: (self: #Self) {
@@ -28,21 +18,21 @@ Signal(i32).decrement :: (self: #Self) {
 
 main :: () {
 
-    count := signal(9)
-    greet := signal("Hello ")
+    count := signal(0)
 
     main_view := 
         div (
-            id("main")
-            class("1 2 3")
-            attr("href=/ value=50")
-            greet
             div (
-                "world!"
+                style("margin: 4em; padding: 2em; border: 1px solid black;")
+                "Increment"
+            ) |> click(([count]) => count->increment())
+
+            div (
+                attr("href=# value=50")
+                style("color: red; font-size: 2em;")
+                "Count: ", count
             )
-            count
         ) 
-        |> click(([count]) => count->increment())
         |> append(get_body())
 
 }
