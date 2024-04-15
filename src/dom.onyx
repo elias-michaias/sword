@@ -243,15 +243,29 @@ get_children :: (el: js.Value) -> ElementCollection {
     return cast(ElementCollection) children;
 }
 
+keep :: (el: $T, fn: (T) -> $R) -> T {
+    fn(el);
+    return el;
+}
+
 /// Applies the specified function to each element in the given collection of elements.
 /// - `els`: The collection of elements.
 /// - `fn`: The function to apply to each element.
-batch :: (els: ElementCollection, fn: (js.Value, i32) -> void) -> ElementCollection {
-    _els := cast(js.Value) els;
-    for i in _els->length() {
-        fn(_els->index(i), i);
+batch :: #match {
+    (els: ElementCollection, fn: (js.Value, i32) -> void) -> ElementCollection {
+        _els := cast(js.Value) els;
+        for i in _els->length() {
+            fn(_els->index(i), i);
+        }
+        return els;
     }
-    return els;
+    (els: ElementCollection, fn: (js.Value, i32) -> $T) -> ElementCollection {
+        _els := cast(js.Value) els;
+        for i in _els->length() {
+            fn(_els->index(i), i);
+        }
+        return els;
+    }
 }
 
 // id {{{
