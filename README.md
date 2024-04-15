@@ -8,15 +8,15 @@ Here are some examples of Sword in action:
 
 ## Reactivity
 ```fsharp
-    count := signal(0)
+count := signal(0)
 
+div (
+    "Count: ", count
     div (
-        "Count: ", count
-        div (
-            style("color: blue; padding: 2em; border: 1px solid blue")
-            "Increment"
-        ) |> click(([count]) => count->set(count->get() + 1))
-    )
+        style("color: blue; padding: 2em; border: 1px solid blue")
+        "Increment"
+    ) |> click(([count]) => count->set(count->get() + 1))
+)
 ```
 
 ## DOM querying
@@ -75,6 +75,7 @@ div(
     |> get_children
     |> batch(el, i => el |> set_text("I'm Div #", i))
 )
+|> click(el => el |> remove())
 ```
 
 # Installation
