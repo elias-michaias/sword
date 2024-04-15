@@ -46,6 +46,13 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
             case js.Value {
                 *any_as(targets_, js.Value) |> append(el);
             }
+            case ElementCollection {
+                col := *any_as(targets_, ElementCollection);
+                val := cast(js.Value) col;
+                for i in val->length() {
+                    val->index(i)->call("appendChild", el);
+                }
+            }
             case ElementMessageId {
                 el |> set_id(tprintf("{}", cast(str) *any_as(targets_, ElementMessageId)));
             }
@@ -105,11 +112,8 @@ div :: #match {
     (class := "", id := "", attr := "", style := "") => ([class, id, attr, style] args: ..any) -> js.Value {
             new_el := get_dom()
             |> create("div")
-
             if class != "" do new_el |> set_class(class)
-            
             if id != "" do new_el |> set_id(id)
-
             if attr != "" {
                 attrs := attr |> str.split(' ');
                 for attr_ in attrs {
@@ -117,7 +121,6 @@ div :: #match {
                     new_el |> set_attr(key_val[0], key_val[1]);
                 }
             }
-
             if style != "" {
                 styles := style |> str.split(';');
                 for style_ in styles {
@@ -127,11 +130,9 @@ div :: #match {
                     new_el |> set_style(key, key_val[1]);
                 }
             }
-
             for arg in args {
                 new_el |> view_select(arg.type, arg);
             }
-
             return new_el
     }
 }

@@ -20,6 +20,12 @@ main :: () {
 
     count := signal(0)
 
+    div_w_children := div (
+        div("Child 1")
+        div("Child 2")
+        div("Child 3")
+    )
+
     reusable_attr_div := div(class="test curry", id="special", style="color: blue")
 
     main_view := 
@@ -41,11 +47,11 @@ main :: () {
                 div()
                 div()
                 div()
-            )
-            |> keep(el => el 
-                |> get_children() 
+            ) |> keep(el => el 
+                |> query_all("div") 
                 |> batch((el, i) => el |> set_text("Div #", i))
             )
+            div_w_children |> query_all("div")
         ) 
         |> append(get_body())
 }

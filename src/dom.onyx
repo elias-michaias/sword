@@ -223,7 +223,8 @@ insert_text :: (el: js.Value, text: $T) -> js.Value {
 /// Queries the document for the first element that matches the specified selector.
 /// - `dom`: The document to query.
 /// - `new_el`: The selector to match.
-query :: (dom: js.Value, new_el: str) -> js.Value {
+query :: (dom: $R, new_el: str) -> js.Value {
+    dom = cast(js.Value) dom;
     el := dom->call("querySelector", new_el);
     return el;
 }
@@ -231,7 +232,7 @@ query :: (dom: js.Value, new_el: str) -> js.Value {
 /// Queries the document for all elements that match the specified selector.
 /// - `dom`: The document to query.
 /// - `new_el`: The selector to match.
-query_all :: (dom: js.Value, new_el: str) -> ElementCollection {
+query_all :: (dom: $R, new_el: str) -> ElementCollection {
     el:= dom->call("querySelectorAll", new_el);
     return cast(ElementCollection) el;
 }
@@ -273,7 +274,7 @@ batch :: #match {
 /// Queries the document for the element with the specified ID.
 /// - `dom`: The document to query.
 /// - `new_el`: The ID of the element to find.
-query_id :: (dom: js.Value, new_el: str) -> js.Value {
+query_id :: (dom: $T, new_el: str) -> js.Value {
     el := dom->call("getElementById", new_el);
     return el;
 }
@@ -307,7 +308,7 @@ get_id :: (el: js.Value) -> str {
 /// Queries the document for the first element that has the specified class.
 /// - `dom`: The document to query.
 /// - `new_el`: The class name to match.
-query_class :: (dom: js.Value, new_el: str) -> js.Value {
+query_class :: (dom: $T, new_el: str) -> js.Value {
     el := dom->call("querySelector", str.concat(context.allocator, ".", new_el));
     return el;
 }
@@ -315,7 +316,7 @@ query_class :: (dom: js.Value, new_el: str) -> js.Value {
 /// Queries the document for all elements that have the specified class.
 /// - `dom`: The document to query.
 /// - `new_el`: The class name to match.
-query_all_class :: (dom: js.Value, new_el: str) -> ElementCollection {
+query_all_class :: (dom: $T, new_el: str) -> ElementCollection {
     el := dom->call("getElementsByClassName", new_el);
     return cast(ElementCollection) el;
 }
@@ -367,7 +368,7 @@ get_class :: (el: js.Value) -> str {
 /// - `dom`: The document to query.
 /// - `attr`: The attribute name.
 /// - `val`: The attribute value.
-query_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
+query_attr :: (dom: $R, attr: $T, val: T) -> js.Value {
     new_val := tprintf("{}", val);
     new_attr := tprintf("{}", attr);
     input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
@@ -379,7 +380,7 @@ query_attr :: (dom: js.Value, attr: $T, val: T) -> js.Value {
 /// - `dom`: The document to query.
 /// - `attr`: The attribute name.
 /// - `val`: The attribute value.
-query_all_attr :: (dom: js.Value, attr: $T, val: T) -> ElementCollection {
+query_all_attr :: (dom: $R, attr: $T, val: T) -> ElementCollection {
     new_val := tprintf("{}", val);
     new_attr := tprintf("{}", attr);
     input := str.concat(context.allocator, "[", new_attr, "=\"", new_val, "\"]");
