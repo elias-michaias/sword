@@ -6,6 +6,19 @@ Sword is still in very early development.
 # Examples
 Here are some examples of Sword in action:
 
+## Reactivity
+```fsharp
+    count := signal(0)
+
+    div (
+        "Count: ", count
+        div (
+            style("color: blue; padding: 2em; border: 1px solid blue")
+            "Increment"
+        ) |> click(([count]) => count->set(count->get() + 1))
+    )
+```
+
 ## DOM querying
 ```fsharp
 count := signal(0)
