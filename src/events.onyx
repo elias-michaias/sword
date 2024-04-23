@@ -8,7 +8,7 @@ use core.js
 click :: #match {}
 
 #overload
-click :: (el: $T, func: (T) -> void) -> #auto {
+click :: macro(el: $T, func: (T) -> void) -> #auto {
     el->call("addEventListener", "click", js.func((this, args, [el, func]) => {
         func(el);
         return js.Undefined;
@@ -17,7 +17,7 @@ click :: (el: $T, func: (T) -> void) -> #auto {
 }
 
 #overload
-click :: (el: $T, func: (T) -> js.Value) -> #auto {
+click :: macro(el: $T, func: (T) -> js.Value) -> #auto {
     el->call("addEventListener", "click", js.func((this, args, [el, func]) => {
         func(el);
         return js.Undefined;
@@ -27,7 +27,7 @@ click :: (el: $T, func: (T) -> js.Value) -> #auto {
 
 
 #overload
-click :: (el: $T, func: () -> void) -> #auto {
+click :: macro(el: $T, func: () -> void) -> #auto {
     el->call("addEventListener", "click", js.func((this, args, [el, func]) => {
         func();
         return js.Undefined;
@@ -36,7 +36,7 @@ click :: (el: $T, func: () -> void) -> #auto {
 }
 
 #overload
-click :: (el: $T, func: () -> any) -> #auto {
+click :: macro(el: $T, func: () -> any) -> #auto {
     el->call("addEventListener", "click", js.func((this, args, [el, func]) => {
         func(el);
         return js.Undefined;
