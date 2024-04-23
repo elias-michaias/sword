@@ -13,8 +13,6 @@ use reactive {*}
 #load "./view.onyx"
 use view {*}
 
-DEBUG_MODE :: false;
-
 ElementCollection :: #distinct js.Value
 
 /// Returns the global document object.
@@ -59,63 +57,6 @@ append :: (el: js.Value, target: js.Value) -> js.Value {
 /// - `target`: The parent element.
 prepend :: (el: js.Value, target: js.Value) -> js.Value {
     target->call("prepend", el);
-    return el;
-}
-
-/// Appends the specified elements and text to the given element.
-/// - `el`: The element to which the targets will be appended.
-/// - `targets`: The elements or text to be appended.
-grab :: (el: js.Value, targets_: ..any) -> js.Value {
-    targets := any_deep_copy(targets_);
-    use runtime.info;
-    for target in targets {
-
-        #if DEBUG_MODE {
-            conv.format_va("{}", any.[target.data]) |>console_log();
-            // conv.format_va("{}", any.[target.type]) |> console_log();
-            tprintf("{}", target.type) |> console_log();
-            // console_log(any.[target.data])
-
-            tprintf("str? {}", info.struct_constructed_from(target.type, str)) |> console_log();
-            tprintf("js.Value? {}", info.struct_constructed_from(target.type, js.Value)) |> console_log();
-            tprintf("Signal? {}", info.struct_constructed_from(target.type, Signal)) |> console_log();
-            tprintf("ElementMessageId? {}", info.struct_constructed_from(target.type, ElementMessageId)) |> console_log();
-        }
-
-        switch target.type {
-            case js.Value {
-                el->call("appendChild", any.[ target ]);
-            }
-            case ElementMessageClass {
-                classes := *any_as(target, str) |> str.split(' ');
-                for class in classes {
-                    el |> set_class(class);
-                }
-            }
-            case ElementMessageId {
-                el |> set_id(any.[ target ]);
-            }
-            case ElementMessageAttr {
-                attrs := *any_as(target, str) |> str.split(' ');
-                for attr in attrs {
-                    parts := attr |> str.split('=');
-                    el |> set_attr(parts[0], parts[1]);
-                }
-            } 
-            case #default {
-                if info.struct_constructed_from(target.type, Signal) {
-                    signal_arg := any.[ target ];
-                    reactor := get_dom()
-                    |> create("span")
-                    |> append(el)
-                    |> react_inner(signal_arg);
-                } else {
-                    text_content := any.[ target.data ] |> conv.format_va("{}", _);
-                    el->call("insertAdjacentText", "beforeend", text_content);
-                }
-            }
-        }
-    }
     return el;
 }
 
@@ -254,16 +195,28 @@ keep :: (el: $T, fn: (T) -> $R) -> T {
 /// - `fn`: The function to apply to each element.
 batch :: #match {
     (els: ElementCollection, fn: (js.Value, i32) -> void) -> ElementCollection {
+        context.closure_allocate = (size) => {
+            return context.allocator->alloc(size)
+        }
         _els := cast(js.Value) els;
         for i in _els->length() {
             fn(_els->index(i), i);
         }
+        if fn.closure != null {
+            context.allocator->free(fn.closure)
+        }
         return els;
     }
     (els: ElementCollection, fn: (js.Value, i32) -> $T) -> ElementCollection {
+        context.closure_allocate = (size) => {
+            return context.allocator->alloc(size)
+        }
         _els := cast(js.Value) els;
         for i in _els->length() {
             fn(_els->index(i), i);
+        }
+        if fn.closure != null {
+            context.allocator->free(fn.closure)
         }
         return els;
     }
@@ -425,8 +378,10 @@ alert :: (msg: any) {
 
 /// Logs the specified message to the console.
 /// - `msg`: The message to log.
-console_log :: (msg: $T) {
-    js.Global->get("console")->call("log", tprintf("{}", msg));
+console_log :: (msgs: ..any) {
+    for msg in msgs {
+        js.Global->get("console")->call("log", conv.format_va("{}", any.[msg]));
+    }
 }
 
 // misc }}}

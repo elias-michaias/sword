@@ -1,0 +1,91 @@
+#load "core/onyx/compiler_extension"
+
+use onyx.compiler_extension {*}
+
+use core.conv
+use core {
+    eprintf
+    tprintf
+    Result
+}
+
+main :: () {
+    ext := ExtensionContext.make("Generate View Procedures for Templating")
+    ext->handle_macro("new_html_element", handle_html)
+    ext->start(message_handler)
+}
+
+handle_html :: (
+    ext: &ExtensionContext,
+    em: ExpansionInfo
+) -> Result(str, ExpansionFailureReason) {
+
+    code: dyn_str
+
+    elements := em.body |> str.split(',')
+
+    for element in elements {
+        element = element |> str.strip_whitespace()
+        code->append(tprintf("
+{} :: #match {
+    (args: ..any) -> js.Value {
+        new_el := get_dom() 
+        |> create(\"{}\")
+        for arg in args {
+            new_el |> view_select(arg.type, arg);
+        }
+        return new_el
+    }
+    (class := \"\", id := \"\", attr := \"\", style := \"\") => ([class, id, attr, style] args: ..any) -> js.Value {
+            new_el := get_dom()
+            |> create(\"{}\")
+            if class != \"\" do new_el |> set_class(class)
+            if id != \"\" do new_el |> set_id(id)
+            if attr != \"\" {
+                attrs := attr |> str.split(' ');
+                for attr_ in attrs {
+                    key_val := attr_ |> str.split('=');
+                    new_el |> set_attr(key_val[0], key_val[1]);
+                }
+            }
+            if style != \"\" {
+                styles := style |> str.split(';');
+                for style_ in styles {
+                    key_val := style_ |> str.split(':');
+                    key := key_val[0] |> str.strip_whitespace();
+                    val := key_val[1];
+                    new_el |> set_style(key, key_val[1]);
+                }
+            }
+            for arg in args {
+                new_el |> view_select(arg.type, arg);
+            }
+            return new_el
+    }
+}
+        ", element, element, element))
+    }
+    // eprintf("{p}\n\n", cast(str) code)
+    return .{ Ok = code }
+}
+
+message_handler :: (ext, msg) => {
+    // Print debugging an extensions requires you to print
+    // to standard error, so you have to use 'eprintf'
+    // eprintf("Message: {p}\n", msg)
+
+    switch msg {
+        case .ExpandMacro as em {
+            // Every macro expansion needs a response, even if it
+            // is not supported, otherwise the compiler will hang.
+            ext->send(.{
+                Expansion = .{
+                    id = em.id,
+                    code = .{ Err = .NotSupported }
+                }
+            })
+        }
+
+        case _ {}
+    }
+}

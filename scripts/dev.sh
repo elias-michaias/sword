@@ -7,5 +7,4 @@ cd ..
 onyx watch \
     -r js \
     -o ./dist/app.wasm \
-    --feature optional-semicolons \
     main.onyx

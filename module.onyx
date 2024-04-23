@@ -1,1 +1,7 @@
 #load_all "./src"
+
+ext_html :: #compiler_extension "./ext/html.onyx" {
+    new_html_element
+}
+
+ext_html.new_html_element!{div, button, h1}

@@ -8,6 +8,19 @@ use reactive {*}
 use style {*}
 use view {*}
 
+use core.misc {*}
+use core.js
+
+
+
+ext_html :: #compiler_extension "./ext/html.onyx" {
+    new_html_element
+}
+
+ext_html.new_html_element!{a, abbr, address, area, article, aside, audio, b, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite,code, col, colgroup, data, datalist, dd, del, details, dfn, dialog, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, head, header, hr, html, i, iframe, img, input, ins, kbd, label, legend, li, link, main, map, mark, meta, meter, nav, noscript, object, ol, optgroup, option, output, p, param, picture, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, slot, small, source, span, strong, style, sub, summary, sup, svg, table, tbody, td, template, textarea, tfoot, th, thead, time, title, tr, track, u, ul, var, video, wbr}
+
+
+
 Signal(i32).increment :: (self: #Self) {
     self->set(self->get() + 1)
 }
@@ -16,45 +29,29 @@ Signal(i32).decrement :: (self: #Self) {
     self->set(self->get() - 1)
 }
 
+
+
 main :: () {
 
     count := signal(0)
 
-    div_w_children := div (
-        div("Child 1")
-        div("Child 2")
-        div("Child 3")
-    )
-
-    reusable_attr_div := div(class="test curry", id="special", style="color: blue")
-
-    main_view := 
-        div (
-            div (
-                style("margin: 4em; padding: 2em; border: 1px solid black;")
-                "Increment"
-            ) |> click(([count]) => count->increment())
-
-            div (
-                attr("href=# value=50")
-                style("color: red; font-size: 2em;")
+    main_view :=
+        div(class="main")(
+            h1(
                 "Count: ", count
             )
-            div(class="test curry", id="special", style="color: blue")(
-                "Curry test"
-            )
-            reusable_attr_div (
-                div()
-                div()
-                div()
-            ) |> keep(el => el 
-                |> query_all("div") 
-                |> batch((el, i) => el |> set_text("Div #", i))
-            )
-            div_w_children |> query_all("div")
-        ) 
-        |> append(get_body())
-}
+            button(
+                "Increment"
+            ) |> click(([count]) => count->increment())
+            button(
+                "Decrement"
+            ) |> click(([count]) => count->decrement())
+        )
+
+    main_view |> append(get_body())
+
+} 
+
 
 
 

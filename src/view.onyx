@@ -1,5 +1,9 @@
 package view
 
+#load "./dom.onyx"
+#load "./reactive.onyx"
+#load "./style.onyx"
+
 use dom {*}
 use reactive {*}
 use style {*}
@@ -89,50 +93,58 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
         |> create("span") 
         |> append(el)
         switch type {
+            case Signal(i8) {
+                reactor |> react_inner(*any_as(targets_, Signal(i8)))
+            }
+            case Signal(i16) {
+                reactor |> react_inner(*any_as(targets_, Signal(i16)))
+            }
             case Signal(i32) {
-                    reactor |> react_inner(*any_as(targets_, Signal(i32)))
+                reactor |> react_inner(*any_as(targets_, Signal(i32)))
+            }
+            case Signal(i64) {
+                reactor |> react_inner(*any_as(targets_, Signal(i64)))
+            }
+            case Signal(f32) {
+                reactor |> react_inner(*any_as(targets_, Signal(f32)))
+            }
+            case Signal(f64) {
+                reactor |> react_inner(*any_as(targets_, Signal(f64)))
+            }
+            case Signal(u8) {
+                reactor |> react_inner(*any_as(targets_, Signal(u8)))
+            }
+            case Signal(u16) {
+                reactor |> react_inner(*any_as(targets_, Signal(u16)))
+            }
+            case Signal(u32) {
+                reactor |> react_inner(*any_as(targets_, Signal(u32)))
+            }
+            case Signal(u64) {
+                reactor |> react_inner(*any_as(targets_, Signal(u64)))
+            }
+            case Signal(bool) {
+                reactor |> react_inner(*any_as(targets_, Signal(bool)))
             }
             case Signal(str) {
-                    reactor |> react_inner(*any_as(targets_, Signal(str)))
+                reactor |> react_inner(*any_as(targets_, Signal(str)))
+            }
+            case Signal(cstr) {
+                reactor |> react_inner(*any_as(targets_, Signal(cstr)))
+            }
+            case Signal(dyn_str) {
+                reactor |> react_inner(*any_as(targets_, Signal(dyn_str)))
+            }
+            case Signal(rawptr) {
+                reactor |> react_inner(*any_as(targets_, Signal(rawptr)))
+            }
+            case Signal(any) {
+                reactor |> react_inner(*any_as(targets_, Signal(any)))
+            }
+            case Signal(type_expr) {
+                reactor |> react_inner(*any_as(targets_, Signal(type_expr)))
             }
         }
     }
     return el;
-}
-
-div :: #match {
-    (args: ..any) -> js.Value {
-        new_el := get_dom() 
-        |> create("div")
-        for arg in args {
-            new_el |> view_select(arg.type, arg);
-        }
-        return new_el
-    }
-    (class := "", id := "", attr := "", style := "") => ([class, id, attr, style] args: ..any) -> js.Value {
-            new_el := get_dom()
-            |> create("div")
-            if class != "" do new_el |> set_class(class)
-            if id != "" do new_el |> set_id(id)
-            if attr != "" {
-                attrs := attr |> str.split(' ');
-                for attr_ in attrs {
-                    key_val := attr_ |> str.split('=');
-                    new_el |> set_attr(key_val[0], key_val[1]);
-                }
-            }
-            if style != "" {
-                styles := style |> str.split(';');
-                for style_ in styles {
-                    key_val := style_ |> str.split(':');
-                    key := key_val[0] |> str.strip_whitespace();
-                    val := key_val[1];
-                    new_el |> set_style(key, key_val[1]);
-                }
-            }
-            for arg in args {
-                new_el |> view_select(arg.type, arg);
-            }
-            return new_el
-    }
 }
