@@ -1,7 +1,7 @@
 # sword
 Sword is a **fine-grained, functional-first, front-end** framework for the web that leverages the power of the *Onyx* programming language and runs on WebAssembly.
 
-Sword is still in active and early development.
+Sword is still in active and early development and as of current relies on the nightly version of Onyx.
 
 # Examples
 Here are some examples of Sword in action:
@@ -79,5 +79,7 @@ div(
 ```
 
 # Installation
-`onyx self-upgrade nightly`
-`onyx add https://github.com/elias-michaias/sword`
+```
+onyx self-upgrade nightly
+onyx add https://github.com/elias-michaias/sword
+```
