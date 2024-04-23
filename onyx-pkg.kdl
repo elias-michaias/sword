@@ -3,7 +3,7 @@ package {
     author "elias-michaias" 
     url "https://github.com/elias-michaias/sword" 
     description "A fine-grained, functional, front-end framework for the web in Onyx." 
-    version "1.4.0" 
+    version "1.5.0" 
 }
 
 config {
