@@ -15,7 +15,7 @@ div (
     div (
         style("color: blue; padding: 2em; border: 1px solid blue")
         "Increment"
-    ) |> click(([count]) => count->set(count->get() + 1))
+    ) |> onclick(([count]) => count->set(count->get() + 1))
 )
 ```
 
