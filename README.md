@@ -31,7 +31,7 @@ new_button := get_dom()
 |> create("button")
 |> set_inner("Increment")
 |> append(get_body())
-|> click(([count]) => count->set(count->get() + 1))
+|> onclick(([count]) => count->set(count->get() + 1))
 ```
 
 ## View templating
@@ -75,7 +75,7 @@ div(
     |> get_children
     |> batch(el, i => el |> set_text("I'm Div #", i))
 )
-|> click(el => el |> remove())
+|> onclick(el => el |> remove())
 ```
 
 # Installation

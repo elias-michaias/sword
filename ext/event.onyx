@@ -1,0 +1,88 @@
+#load "core/onyx/compiler_extension"
+
+use onyx.compiler_extension {*}
+
+use core.conv
+use core {
+    eprintf
+    tprintf
+    Result
+}
+
+main :: () {
+    ext := ExtensionContext.make("Generate Event Procedures for Listening")
+    ext->handle_macro("new_event_listener", handle_event)
+    ext->start(message_handler)
+}
+
+handle_event :: (
+    ext: &ExtensionContext,
+    em: ExpansionInfo
+) -> Result(str, ExpansionFailureReason) {
+
+    code: dyn_str
+
+    events := em.body |> str.split(',')
+
+    for event in events {
+        event = event |> str.strip_whitespace()
+        code->append(tprintf("
+on{} :: #match {
+    (el: $T, func: (T) -> void) -> #auto {
+        el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: (T) -> js.Value) -> #auto {
+        el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: () -> void) -> #auto {
+        el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: () -> js.Value) -> #auto {
+        el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+}
+        ", event, event, event, event, event))
+    }
+    // eprintf("{p}\n\n", cast(str) code)
+    return .{ Ok = code }
+}
+
+message_handler :: (ext, msg) => {
+    // Print debugging an extensions requires you to print
+    // to standard error, so you have to use 'eprintf'
+    // eprintf("Message: {p}\n", msg)
+
+    switch msg {
+        case .ExpandMacro as em {
+            // Every macro expansion needs a response, even if it
+            // is not supported, otherwise the compiler will hang.
+            ext->send(.{
+                Expansion = .{
+                    id = em.id,
+                    code = .{ Err = .NotSupported }
+                }
+            })
+        }
+
+        case _ {}
+    }
+}
