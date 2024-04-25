@@ -22,7 +22,7 @@ to fight with a new syntax, in which everything is redefined in such a way that 
 host language. Instead, Sword wants to enable markup inside of true Onyx syntax, and tap into the powers that the language
 has available to it by default without reinventing four-hundred wheels. As a result there is not a distinct notion of a "component" or a "property" in Sword as is common in
 most web frameworks - and this is because every "component" and "property" is, in actuality, just a procedure (or function)
-with arguments. This greatly boosts flexibility and allows you be much more programmatic with your markup manipulation
+with arguments. This greatly boosts flexibility and allows you to be much more programmatic with your markup manipulation
 and introduces some very nice benefits like type-safety on properties and easy handling of state. 
 
 Sword is philosophically comprised of three core tenents: ***simplicity, composability, and beauty.*** 
