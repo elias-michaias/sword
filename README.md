@@ -12,7 +12,7 @@ greeting :: (name: str) =>
     )
 
 greeting("Bob") |> append(get_body())
-greeting("Sarah") |> append(get_body())
+greeting(name="Sarah") |> append(get_body())
 ```
 
 # Philosophy
