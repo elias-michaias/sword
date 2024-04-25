@@ -28,7 +28,7 @@ and introduces some very nice benefits like type-safety on properties and easy h
 Sword is philosophically comprised of three core tenents: ***simplicity, composability, and beauty.*** 
 1. Sword is ***simple.*** If you have a good understanding of HTML and CSS, and a decent working knowledge
 of core programming concepts, it should be easy to pick up Sword and begin creating UIs that are dynamic,
-interactive, and performant. No more of a framework jumping out with lots of complex classes and APIs that cause you to feel like you're no longer working with the language that you are - Sword is designed to feel like you're using Onyx how it is.
+interactive, and performant. No more of a framework jumping out with lots of complex classes and APIs that cause you to feel like you're no longer working with the language that you are - Sword is designed to feel like you're using Onyx how it is. Instead of crowding the developer with a ridiculous amount of features, Sword wants to get out of your way.
 2. Sword is ***composable.*** Every piece of a UI can quickly and easily be pulled into components, manipulated and extended upon
 as a template for further components, and ultimately handled however the programmer may wish. There is no view macro, there is no alternative syntax, there is no special rule for defining components and properties, and there is nothing besides pure programming
 power. Composability doesn't just apply to the macro level; it also applies to the micro. Every individual HTML element can be composed of reusable attributes via currying and piped into extension functions to truly leverage composability at every level of programming.
