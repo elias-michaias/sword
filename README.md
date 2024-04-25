@@ -51,7 +51,7 @@ div (
 )
 ```
 
-## DOM querying
+## DOM Querying
 ```fsharp
 count := signal(0)
 
@@ -66,7 +66,7 @@ new_button := get_dom()
 |> onclick(([count]) => count->set(count->get() + 1))
 ```
 
-## View templating
+## View Templating
 ```fsharp
 reusable_attr_div := div(class="curried" id="composable" style="color: blue")
 
@@ -96,7 +96,7 @@ main_view :=
     |> append(get_body())
 ```
 
-## Batch functions
+## Batch Functions
 ```fsharp
 div(
     div()
