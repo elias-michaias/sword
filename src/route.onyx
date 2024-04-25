@@ -1,0 +1,39 @@
+package route
+
+use core.js
+
+get_hostname :: () -> str {
+    return js.Global->get("location")->get("hostname")->as_str()->unwrap()
+}
+
+get_pathname :: () -> str {
+    return js.Global->get("location")->get("pathname")->as_str()->unwrap()
+}
+
+get_search :: () -> str {
+    return js.Global->get("location")->get("search")->as_str()->unwrap()
+}
+
+get_hash :: () -> str {
+    return js.Global->get("location")->get("hash")->as_str()->unwrap()
+}
+
+get_href :: () -> str {
+    return js.Global->get("location")->get("href")->as_str()->unwrap()
+}
+
+get_origin :: () -> str {
+    return js.Global->get("location")->get("origin")->as_str()->unwrap()
+}
+
+get_protocol :: () -> str {
+    return js.Global->get("location")->get("protocol")->as_str()->unwrap()
+}
+
+get_port :: () -> str {
+    return js.Global->get("location")->get("port")->as_str()->unwrap()
+}
+
+get_host :: () -> str {
+    return js.Global->get("location")->get("host")->as_str()->unwrap()
+}

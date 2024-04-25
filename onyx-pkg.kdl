@@ -12,7 +12,7 @@ config {
 }
 
 dependencies {
-    "https://github.com/onyx-lang/pkg-http-server" "0.3.6" git="https://github.com/onyx-lang/pkg-http-server" 
+    "https://github.com/onyx-lang/pkg-http-server" "0.3.8" git="https://github.com/onyx-lang/pkg-http-server" 
 }
 
 lsp {

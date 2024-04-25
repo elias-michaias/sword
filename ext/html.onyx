@@ -26,6 +26,12 @@ handle_html :: (
 
     for element in elements {
         element = element |> str.strip_whitespace()
+        procname: str
+        if element == "main" {
+            procname = "vmain"
+        } else {
+            procname = element
+        }
         code->append(tprintf("
 {} :: #match {
     (args: ..any) -> js.Value {
@@ -63,7 +69,7 @@ handle_html :: (
             return new_el
     }
 }
-        ", element, element, element))
+        ", procname, element, element))
     }
     // eprintf("{p}\n\n", cast(str) code)
     return .{ Ok = code }
