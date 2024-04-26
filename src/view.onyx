@@ -20,20 +20,52 @@ ElementMessageId :: #distinct str
 ElementMessageAttr :: #distinct str
 ElementMessageStyle :: #distinct str
 
-class :: (class_: $T) -> ElementMessageClass {   
-    return cast(ElementMessageClass, tprintf("{}", class_))
+class :: #match {
+    (class_: $T) -> ElementMessageClass {   
+        return cast(ElementMessageClass, tprintf("{}", class_))
+    }
+    (el: js.Value, class_: $T) -> js.Value {
+        for cls in class_ |> str.split(' ') {
+            el |> add_class(cls);
+        }
+    }
 }
 
-id :: (id_: $T) -> ElementMessageId {
-    return cast(ElementMessageId, tprintf("{}", id_))
+id :: #match {
+    (id_: $T) -> ElementMessageId {
+        return cast(ElementMessageId, tprintf("{}", id_))
+    }
+    (el: js.Value, id_: $T) -> js.Value {
+        return el |> set_id(tprintf("{}", id_));
+    }
 }
 
-attr :: (attr_: $T) -> ElementMessageAttr {
-    return cast(ElementMessageAttr, tprintf("{}", attr_))
+attr :: #match {
+    (attr_: $T) -> ElementMessageAttr {
+        return cast(ElementMessageAttr, tprintf("{}", attr_))
+    }
+    (el: js.Value, attr_: $T) -> js.Value {
+        attrs := attr_ |> str.split(' ');
+        for attr in attrs {
+            key_val := tprintf("{}", attr) |> str.split('=');
+            el |> set_attr(key_val[0], key_val[1]);
+        }
+    }
 }
 
-style :: (style_: $T) -> ElementMessageStyle {
-    return cast(ElementMessageStyle, tprintf("{}", style_))
+style :: #match {
+    (style_: $T) -> ElementMessageStyle {
+        return cast(ElementMessageStyle, tprintf("{}", style_))
+    }
+    (el: js.Value, style_: $T) -> js.Value {
+        styles := style_ |> str.split(';');
+        for style in styles {
+            key_val := tprintf("{}", style) |> str.split(':');
+            key := key_val[0] |> str.strip_whitespace();
+            val := key_val[1];
+            el |> set_style(key, key_val[1]);
+        }
+    }
 }
 
 extend :: (el: js.Value, args: ..any) -> js.Value {
@@ -41,6 +73,15 @@ extend :: (el: js.Value, args: ..any) -> js.Value {
         el |> view_select(arg.type, arg);
     }
     return el;
+}
+
+apply :: #match {
+    (func: (js.Value) -> js.Value) => ([func] el: js.Value) -> js.Value {
+        return func(el)
+    }
+    (func: (js.Value) -> void) => ([func] el: js.Value) {
+        func(el)
+    }
 }
 
 view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
@@ -88,7 +129,16 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
                 proc(el)
             }
             case #default {
-                el->call("insertAdjacentText", "beforeend", conv.format_va("{}", any.[targets_]));
+                // info := targets_.type->info()
+                // if info.kind == .Function {
+                //     func_info := info->as_function()
+                //     if func_info.parameter_types.length == 1 && func_info.parameter_types[0] == js.Value {
+                //         func := targets_
+                //         func(el)
+                //     }
+                // } else {
+                    el->call("insertAdjacentText", "beforeend", conv.format_va("{}", any.[targets_]));
+                // }
             }
 
         }

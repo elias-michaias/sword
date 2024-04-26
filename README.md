@@ -132,6 +132,35 @@ counter(count, 2) |> append(get_body())
 counter(signal(0), 3) |> append(get_body())
 ```
 
+## Customizing with Pipes or Insertions
+```fsharp
+greeting :: (name: str) =>
+    // You can either use pipe form or inserted form to modify elements
+    // Organize however is best for your project/situation
+    div(class="main", id=name)(
+        // Get excited!
+        h1(
+            "Hello ", name
+
+            // inserted event function runs on click
+            onclick(el => el |> extend("!"))
+
+            // apply runs on creation to allow for extra logic 
+            // on element from inside view without piping after
+            apply(el => el |> extend("??"))
+
+            // this id func applies to the h1 using pipe form
+        ) |> id("piped-id")
+
+        // this style func applies to the div using inserted form
+        style("text-decoration: underline")
+
+        // this onclick func applies to div using pipe form
+    ) |> onclick(el => el |> extend(button("Wanna click?")))
+
+greeting("Bob") |> append(get_body())
+```
+
 # Installation
 ```
 onyx self-upgrade nightly
