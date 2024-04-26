@@ -83,9 +83,10 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
                     el |> set_style(key, key_val[1]);
                 }
             }
-            // case proc {
-            //     targets_(el);
-            // }
+            case #type (js.Value) -> js.Value, #type (js.Value) -> void {
+                proc := *any_as(targets_, #type (js.Value) -> js.Value)
+                proc(el)
+            }
             case #default {
                 el->call("insertAdjacentText", "beforeend", conv.format_va("{}", any.[targets_]));
             }

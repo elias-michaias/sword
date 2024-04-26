@@ -195,28 +195,16 @@ keep :: (el: $T, fn: (T) -> $R) -> T {
 /// - `fn`: The function to apply to each element.
 batch :: #match {
     (els: ElementCollection, fn: (js.Value, i32) -> void) -> ElementCollection {
-        context.closure_allocate = (size) => {
-            return context.allocator->alloc(size)
-        }
         _els := cast(js.Value) els;
         for i in _els->length() {
             fn(_els->index(i), i);
-        }
-        if fn.closure != null {
-            context.allocator->free(fn.closure)
         }
         return els;
     }
     (els: ElementCollection, fn: (js.Value, i32) -> $T) -> ElementCollection {
-        context.closure_allocate = (size) => {
-            return context.allocator->alloc(size)
-        }
         _els := cast(js.Value) els;
         for i in _els->length() {
             fn(_els->index(i), i);
-        }
-        if fn.closure != null {
-            context.allocator->free(fn.closure)
         }
         return els;
     }
@@ -373,7 +361,7 @@ get_attr :: (el: js.Value, attr: str) -> str {
 /// Displays an alert dialog with the specified message.
 /// - `msg`: The message to display.
 alert :: (msg: any) {
-    js.Global->call("alert", tprintf("{}", msg));
+    js.Global->call("alert", conv.format_va("{}", any.[msg]));
 }
 
 /// Logs the specified message to the console.

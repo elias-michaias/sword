@@ -59,8 +59,36 @@ on{} :: #match {
         }));
         return el;
     }
+    (func: (js.Value) -> void) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: (js.Value) -> js.Value) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: () -> void) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: () -> js.Value) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
 }
-        ", event, event, event, event, event))
+        ", event, event, event, event, event, event, event, event, event))
     }
     // eprintf("{p}\n\n", cast(str) code)
     return .{ Ok = code }

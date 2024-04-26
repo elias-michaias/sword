@@ -32,15 +32,27 @@ Signal(i32).decrement :: (self: #Self) {
     self->set(self->get() - 1)
 }
 
+test :: (x: i32) => ([x] el: js.Value) -> js.Value {
+    el |> extend(x)
+    return el
+}
 
 main :: () {
 
-    greeting :: (name: str) =>
-        div(class="main", id=name)(
+
+    greeting :: (name: str) => {
+        count := signal(0)
+        return div(class="main", id=name)(
             // Get excited!
-            h1("Hello ", name) |> onclick(el => el |> extend("!"))
+            count
+            h1(
+                "Hello ", name
+                onclick(el => el |> extend("!"))
+                onclick(([count]) => count->increment())
+            ) 
             style("text-decoration: underline")
         )
+    }
 
     greeting("Bob") |> append(get_body())
     greeting(name="Sarah") |> append(get_body())
