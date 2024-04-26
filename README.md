@@ -161,6 +161,54 @@ greeting :: (name: str) =>
 greeting("Bob") |> append(get_body())
 ```
 
+## Todo MVC
+```fsharp
+swap_complete :: (el, completeness) => {
+    if completeness->get() {
+        el |> set_style("text-decoration", "line-through") |> set_style("font-style", "italic")
+        completeness->set(false)
+    } else {
+        el |> set_style("text-decoration", "none") |> set_style("font-style", "normal")
+        completeness->set(true)
+    }
+}
+
+todo :: (item: str) => {
+    completeness := signal(false)
+    todo_item := h1(item)
+    main_div := div(todo_item)
+
+    complete_button := 
+        button(
+            "Complete"
+        ) |> onclick((el, [main_div, completeness]) => main_div |> swap_complete(completeness))
+
+    delete_button := 
+        button(
+            "Remove"
+        ) |> onclick(([main_div]) => main_div |> remove())
+
+    return main_div |> extend(complete_button, delete_button)
+}
+
+todolist :: () => {
+    selection := input(attr="placeholder=Todo...")()
+
+    return div(
+        h1("Todo List")
+        selection
+        button("Add") |> onclick((el, [selection]) => { 
+            selection |> get_value() |> todo() |> append(get_body())
+            selection |> set_value("")
+        })
+    )
+}
+
+main :: () {
+     todolist() |> append(get_body())
+} 
+```
+
 # Installation
 ```
 onyx self-upgrade nightly

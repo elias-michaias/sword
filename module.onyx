@@ -1,4 +1,14 @@
 #load_all "./src"
+use dom {*}
+use head {*}
+use reactive {*}
+use route {*}
+use style {*}
+use view {*}
+
+use core.misc {*}
+use core.js
+
 
 ext_html :: #compiler_extension "./ext/html.onyx" {
     new_html_element

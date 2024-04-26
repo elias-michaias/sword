@@ -32,33 +32,49 @@ Signal(i32).decrement :: (self: #Self) {
     self->set(self->get() - 1)
 }
 
+swap_complete :: (el, completeness) => {
+    if completeness->get() {
+        el |> set_style("text-decoration", "line-through") |> set_style("font-style", "italic")
+        completeness->set(false)
+    } else {
+        el |> set_style("text-decoration", "none") |> set_style("font-style", "normal")
+        completeness->set(true)
+    }
+}
+
+todo :: (item: str) => {
+    completeness := signal(false)
+    todo_item := h1(item)
+    main_div := div(todo_item)
+
+    complete_button := 
+        button(
+            "Complete"
+        ) |> onclick((el, [main_div, completeness]) => main_div |> swap_complete(completeness))
+
+    delete_button := 
+        button(
+            "Remove"
+        ) |> onclick(([main_div]) => main_div |> remove())
+
+    return main_div |> extend(complete_button, delete_button)
+}
+
+todolist :: () => {
+    selection := input(attr="placeholder=Todo...")()
+
+    return div(
+        h1("Todo List")
+        selection
+        button("Add") |> onclick((el, [selection]) => { 
+            selection |> get_value() |> todo() |> append(get_body())
+            selection |> set_value("")
+        })
+    )
+}
+
 main :: () {
-
-    greeting :: (name: str) =>
-        // You can either use pipe form or inserted form to modify elements
-        div(class="main", id=name)(
-            // Get excited!
-            h1(
-                "Hello ", name
-
-                // event function runs on click
-                onclick(el => el |> extend("!"))
-
-                // apply runs on creation to allow for extra logic 
-                // on element from inside view without piping after
-                apply(el => el |> extend("??"))
-
-                // this id func applies to the h1 using pipe form
-            ) |> id("piped-id")
-
-            // this style func applies to the div using inserted form
-            style("text-decoration: underline")
-
-            // this onclick func applies to div using pipe form
-        ) |> onclick(el => el |> extend(button("Wanna click?")))
-
-    greeting("Bob") |> append(get_body())
-
+     todolist() |> append(get_body())
 } 
 
 

@@ -356,6 +356,24 @@ get_attr :: (el: js.Value, attr: str) -> str {
 
 // attr }}}
 
+// form {{{
+
+/// Returns the value attribute of the specified element.
+/// - `el`: The element to get the value attribute from.
+get_value :: (el: js.Value) -> str {
+    return el->get("value")->as_str()->unwrap();
+}
+
+/// Sets the value attribute of the specified element to the specified value.
+/// - `el`: The element to set the value attribute of.
+/// - `val`: The new value.
+set_value :: (el: js.Value, val: $T) -> js.Value {
+    el->set("value", tprintf("{}", val));
+    return el;
+}
+
+// form }}}
+
 // misc {{{
 
 /// Displays an alert dialog with the specified message.
