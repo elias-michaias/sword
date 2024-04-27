@@ -1,0 +1,17 @@
+package operators
+
+#load_all "./"
+use dom {*}
+use head {*}
+use reactive {*}
+use route {*}
+use style {*}
+use view {*}
+
+use core.misc {*}
+use core.js
+
+#operator [] (col: ElementCollection, index: u32) -> js.Value {
+    col_ := cast(js.Value) col
+    return col_->index(index)
+}

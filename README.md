@@ -177,8 +177,16 @@ div(
 ```fsharp
 todo :: (item: str) => {
     completeness := signal(false)
-    todo_item := h1(item)
-    main_div := div(todo_item)
+    main_div := 
+        div(
+            h1(item)
+            button(
+                "Complete"
+            ) |> onclick(([completeness]) => completeness->toggle())
+            button(
+                "Remove"
+            ) |> onclick((el) => el |> get_parent() |> remove())
+        )
 
     effect(([completeness, main_div]) => {
         if completeness->get() {
@@ -188,31 +196,18 @@ todo :: (item: str) => {
         }
     })
 
-    complete_button := 
-        button(
-            "Complete"
-        ) |> onclick(([completeness]) => completeness->toggle())
-
-    delete_button := 
-        button(
-            "Remove"
-        ) |> onclick(([main_div]) => main_div |> remove())
-
-    return main_div |> extend(complete_button, delete_button)
+    return main_div
 }
 
-todolist :: () => {
-    selection := input(attr="placeholder=Todo...")()
-
-    return div(
+todolist :: () =>
+    div(
         h1("Todo List")
-        selection
-        button("Add") |> onclick((el, [selection]) => { 
-            selection |> get_value() |> todo() |> append(get_body())
-            selection |> set_value("")
+        input(attr="placeholder=Todo...")()
+        button("Add") |> onclick((el) => { 
+            el |> prev_el() |> get_value() |> todo() |> append(get_body())
+            el |> prev_el() |> set_value("")
         })
     )
-}
 
 main :: () {
      todolist() |> append(get_body())

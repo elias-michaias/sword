@@ -178,12 +178,6 @@ query_all :: (dom: $R, new_el: str) -> ElementCollection {
     return cast(ElementCollection) el;
 }
 
-/// Returns the children of the specified element.
-/// - `el`: The element to get the children of.
-get_children :: (el: js.Value) -> ElementCollection {
-    children := el->get("children");
-    return cast(ElementCollection) children;
-}
 
 keep :: (el: $T, fn: (T) -> $R) -> T {
     fn(el);
@@ -390,8 +384,65 @@ console_log :: (msgs: ..any) {
     }
 }
 
+// misc }}}
+
+// hierarchy {{{
 get_content :: (el: js.Value) -> js.Value {
     return el->get("content")->call("cloneNode", true);
 }
 
-// misc }}}
+next_el :: (el: js.Value) -> js.Value {
+    return el->get("nextElementSibling");
+}
+
+prev_el :: (el: js.Value) -> js.Value {
+    return el->get("previousElementSibling");
+}
+
+get_siblings :: #match {
+    (el: js.Value) -> ElementCollection {
+        return cast(ElementCollection) el->get("parentElement")->get("children");
+    }
+    (el: js.Value, idx: u32) -> js.Value {
+        siblings := el->get("parentElement")->get("children");
+        return siblings->index(idx);
+    }
+}
+
+/// Returns the children of the specified element.
+/// - `el`: The element to get the children of.
+get_children :: #match {
+    (el: js.Value) -> ElementCollection {
+        return cast(ElementCollection) el->get("children");
+    }
+    (el: js.Value, idx: u32) -> js.Value {
+        children := el->get("children");
+        return children->index(idx);
+    }
+}
+
+get_parent :: (el: js.Value) -> js.Value {
+    return el->get("parentNode");
+}
+
+ascend_dom_n :: (el: js.Value, n: u32) -> js.Value {
+    for _ in 0..n {
+        el = el->get("parentNode");
+    }
+    return el;
+}
+
+query_siblings :: (el: js.Value, selector: str) -> js.Value {
+    siblings := el->get("parentNode")->get("children");
+    return siblings->call("querySelector", selector);
+}
+
+query_all_siblings :: (el: js.Value, selector: str) -> ElementCollection {
+    siblings := el->get("parentNode")->get("children");
+    return cast(ElementCollection) siblings->call("querySelectorAll", selector);
+}
+
+clone_el :: (el: js.Value) -> js.Value {
+    return el->call("cloneNode", true);
+}
+// hierarchy }}}
