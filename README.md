@@ -161,6 +161,18 @@ greeting :: (name: str) =>
 greeting("Bob") |> append(get_body())
 ```
 
+## Custom Events
+```fsharp
+div(
+    div(
+        "Hello..."
+    ) |> listen("burger", el => el |> extend(" World!"))
+    button(
+        "burger?"
+    ) |> onclick(() => trigger("burger"))
+) |> append(get_body())
+```
+
 ## Todo MVC
 ```fsharp
 todo :: (item: str) => {

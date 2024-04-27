@@ -90,6 +90,75 @@ on{} :: #match {
 }
         ", event, event, event, event, event, event, event, event, event))
     }
+
+        code->append(tprintf("
+listen :: #match {
+    (el: $T, event: str, func: (T) -> void) -> #auto {
+        get_dom()->call(\"addEventListener\", event, js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, event: str, func: (T) -> js.Value) -> #auto {
+        get_dom()->call(\"addEventListener\", event, js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, event: str, func: () -> void) -> #auto {
+        get_dom()->call(\"addEventListener\", event, js.func((this, args, [el, func]) => {
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, event: str, func: () -> js.Value) -> #auto {
+        get_dom()->call(\"addEventListener\", event, js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (event: str, func: (js.Value) -> void) => ([event, func] el: js.Value) -> js.Value {
+        get_dom()->call(\"addEventListener\", event, js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (event: str, func: (js.Value) -> js.Value) => ([event, func] el: js.Value) -> js.Value {
+        get_dom()->call(\"addEventListener\", event, js.func((this, args, [el, func]) => {
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (event: str, func: () -> void) => ([event, func] el: js.Value) -> js.Value {
+        get_dom()->call(\"addEventListener\", event, js.func((this, args, [el, func]) => {
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (event: str, func: () -> js.Value) => ([event, func] el: js.Value) -> js.Value {
+        get_dom()->call(\"addEventListener\", event, js.func((this, args, [el, func]) => {
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+}
+
+trigger :: (name: str) -> void {
+    event := js.Global->get(\"CustomEvent\")->new(name)
+    get_dom()->call(\"dispatchEvent\", event);
+}
+        "))
     // eprintf("{p}\n\n", cast(str) code)
     return .{ Ok = code }
 }

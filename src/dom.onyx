@@ -390,4 +390,8 @@ console_log :: (msgs: ..any) {
     }
 }
 
+get_content :: (el: js.Value) -> js.Value {
+    return el->get("content")->call("cloneNode", true);
+}
+
 // misc }}}
