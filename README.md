@@ -163,25 +163,23 @@ greeting("Bob") |> append(get_body())
 
 ## Todo MVC
 ```fsharp
-swap_complete :: (el, completeness) => {
-    if completeness->get() {
-        el |> set_style("text-decoration", "line-through") |> set_style("font-style", "italic")
-        completeness->set(false)
-    } else {
-        el |> set_style("text-decoration", "none") |> set_style("font-style", "normal")
-        completeness->set(true)
-    }
-}
-
 todo :: (item: str) => {
     completeness := signal(false)
     todo_item := h1(item)
     main_div := div(todo_item)
 
+    effect(([completeness, main_div]) => {
+        if completeness->get() {
+            main_div |> set_style("text-decoration", "line-through") |> set_style("font-style", "italic")
+        } else {
+            main_div |> set_style("text-decoration", "none") |> set_style("font-style", "normal")
+        }
+    })
+
     complete_button := 
         button(
             "Complete"
-        ) |> onclick((el, [main_div, completeness]) => main_div |> swap_complete(completeness))
+        ) |> onclick(([completeness]) => completeness->toggle())
 
     delete_button := 
         button(

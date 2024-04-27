@@ -37,11 +37,12 @@ signal :: (value: $T) -> Signal(T) {
     return Signal(T).{ &reactive_runtime, id };
 }
 
-effect :: (f: () -> void) {
+effect :: (f: () -> void) => {
     reactive_runtime.effects->push(alloc.copy_closure(f, alloc.as_allocator(&reactive_runtime.effect_arena)));
     id := reactive_runtime.effects.length - 1;
 
     run_effect(id);
+    return id
 }
 
 run_effect :: (effect_id: u32) {
@@ -169,3 +170,92 @@ react_text :: (el: js.Value, args_: ..any) -> js.Value {
 
 // dom integration }}}
  
+// signal helper methods {{{
+
+    // increment and decrement {{{
+    Signal(f32).decrement :: (self: #Self) {
+        self->set(self->get() - 1.0)
+    }
+
+    Signal(f32).increment :: (self: #Self) {
+        self->set(self->get() + 1.0)
+    }
+
+    Signal(f64).decrement :: (self: #Self) {
+        self->set(self->get() - 1.0)
+    }
+
+    Signal(f64).increment :: (self: #Self) {
+        self->set(self->get() + 1.0)
+    }
+
+    Signal(i16).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(i16).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(i32).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(i32).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(i64).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(i64).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(i8).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(i8).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(u16).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(u16).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(u32).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(u32).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(u64).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(u64).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(u8).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(u8).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+    // increment and decrement }}}
+
+Signal(bool).toggle :: (self: #Self) {
+    self->set(!self->get())
+}
+
+// signal helper methods }}}

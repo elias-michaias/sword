@@ -24,33 +24,23 @@ ext_event :: #compiler_extension "./ext/event.onyx" {
 ext_html.new_html_element!{a, abbr, address, area, article, aside, audio, b, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, data, datalist, dd, del, details, dfn, dialog, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, head, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, main, map, mark, menu, menuitem, meta, meter, nav, noscript, object, ol, optgroup, option, output, p, param, picture, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, summary, sup, table, tbody, td, textarea, tfoot, th, thead, time, title, tr, track, u, ul, var, video, wbr}
 ext_event.new_event_listener!{abort, afterprint, animationend, animationiteration, animationstart, beforeprint, beforeunload, blur, canplay, canplaythrough, change, click, contextmenu, copy, cut, dblclick, drag, dragend, dragenter, dragleave, dragover, dragstart, drop, durationchange, ended, error, focus, focusin, focusout, fullscreenchange, fullscreenerror, hashchange, input, invalid, keydown, keypress, keyup, load, loadeddata, loadedmetadata, loadstart, message, mousedown, mouseenter, mouseleave, mousemove, mouseout, mouseover, mouseup, mousewheel, offline, online, open, pagehide, pageshow, paste, pause, play, playing, popstate, progress, ratechange, resize, reset, scroll, search, seeked, seeking, select, show, stalled, storage, submit, suspend, timeupdate, toggle, touchcancel, touchend, touchmove, touchstart, transitionend, unload, volumechange, waiting, wheel}
 
-Signal(i32).increment :: (self: #Self) {
-    self->set(self->get() + 1)
-}
-
-Signal(i32).decrement :: (self: #Self) {
-    self->set(self->get() - 1)
-}
-
-swap_complete :: (el, completeness) => {
-    if completeness->get() {
-        el |> set_style("text-decoration", "line-through") |> set_style("font-style", "italic")
-        completeness->set(false)
-    } else {
-        el |> set_style("text-decoration", "none") |> set_style("font-style", "normal")
-        completeness->set(true)
-    }
-}
-
 todo :: (item: str) => {
     completeness := signal(false)
     todo_item := h1(item)
     main_div := div(todo_item)
 
+    effect(([completeness, main_div]) => {
+        if completeness->get() {
+            main_div |> set_style("text-decoration", "line-through") |> set_style("font-style", "italic")
+        } else {
+            main_div |> set_style("text-decoration", "none") |> set_style("font-style", "normal")
+        }
+    })
+
     complete_button := 
         button(
             "Complete"
-        ) |> onclick((el, [main_div, completeness]) => main_div |> swap_complete(completeness))
+        ) |> onclick(([completeness]) => completeness->toggle())
 
     delete_button := 
         button(
