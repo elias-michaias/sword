@@ -26,46 +26,17 @@ ext_html.new_html_element!{a, abbr, address, area, article, aside, audio, b, bas
 ext_event.new_event_listener!{abort, afterprint, animationend, animationiteration, animationstart, beforeprint, beforeunload, blur, canplay, canplaythrough, change, click, contextmenu, copy, cut, dblclick, drag, dragend, dragenter, dragleave, dragover, dragstart, drop, durationchange, ended, error, focus, focusin, focusout, fullscreenchange, fullscreenerror, hashchange, input, invalid, keydown, keypress, keyup, load, loadeddata, loadedmetadata, loadstart, message, mousedown, mouseenter, mouseleave, mousemove, mouseout, mouseover, mouseup, mousewheel, offline, online, open, pagehide, pageshow, paste, pause, play, playing, popstate, progress, ratechange, resize, reset, scroll, search, seeked, seeking, select, show, stalled, storage, submit, suspend, timeupdate, toggle, touchcancel, touchend, touchmove, touchstart, transitionend, unload, volumechange, waiting, wheel}
 
 
-todo :: (item: str) => {
-    completeness := signal(false)
-    main_div := 
-        div(
-            h1(item)
-            button(
-                "Complete"
-            ) |> onclick(([completeness]) => completeness->toggle())
-            button(
-                "Remove"
-            ) |> onclick((el) => el |> get_parent() |> remove())
-        )
-
-    effect(([completeness, main_div]) => {
-        if completeness->get() {
-            main_div |> set_style("text-decoration", "line-through") |> set_style("font-style", "italic")
-        } else {
-            main_div |> set_style("text-decoration", "none") |> set_style("font-style", "normal")
-        }
-    })
-
-    return main_div
-}
-
-todolist :: () =>
-    div(
-        h1("Todo List")
-        input(attr="placeholder=Todo...")()
-        button("Add") |> onclick((el) => { 
-            el |> prev_el() |> get_value() |> todo() |> append(get_body())
-            el |> prev_el() |> set_value("")
-        })
-    )
-
 main :: () {
-     todolist() |> append(get_body())
+    count := signal(0)
+    is_even := count |> memo(([count]) => count->get() % 2 == 0)
+    div(
+        "Count: ", count
+        br()
+        "Is Even: ", is_even
+        br()
+        button("Increment!") |> onclick(([count]) => count->increment())
+    ) |> append(get_body())
 } 
-
-
-
 
 
 

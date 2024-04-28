@@ -45,12 +45,20 @@ effect :: (f: () -> void) => {
     return id
 }
 
+memo :: (sig: Signal($T), f: () -> bool) -> Signal(bool) {
+    output := f() |> signal()
+    effect(([output, sig, f]) => { 
+        output->set(f())
+    })
+    return output
+}
+
 run_effect :: (effect_id: u32) {
     prev_running_effect := reactive_runtime.running_effect;
     reactive_runtime.running_effect = effect_id;
 
-    effect := reactive_runtime.effects[effect_id];
-    effect();
+    id_effect := reactive_runtime.effects[effect_id];
+    id_effect();
 
     reactive_runtime.running_effect = prev_running_effect;
 }
