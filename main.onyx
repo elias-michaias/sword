@@ -27,14 +27,20 @@ ext_event.new_event_listener!{abort, afterprint, animationend, animationiteratio
 
 
 main :: () {
-    count := signal(0)
-    is_even := count |> memo(([count]) => count->get() % 2 == 0)
+    count1 := signal(0)
+    count2 := signal(2)
+    sum := memo(([count1, count2]) -> i32 { 
+        return count1->get() + count2->get()
+    })
     div(
-        "Count: ", count
+        "Count 1: ", count1
         br()
-        "Is Even: ", is_even
+        "Count 2: ", count2
         br()
-        button("Increment!") |> onclick(([count]) => count->increment())
+        "Sum: ", sum
+        br()
+        button("Increment 1") |> onclick(([count1]) => count1->increment())
+        button("Increment 2") |> onclick(([count2]) => count2->increment())
     ) |> append(get_body())
 } 
 

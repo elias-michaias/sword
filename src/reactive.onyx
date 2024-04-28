@@ -45,9 +45,9 @@ effect :: (f: () -> void) => {
     return id
 }
 
-memo :: (sig: Signal($T), f: () -> bool) -> Signal(bool) {
+memo :: (f: () -> $R) -> Signal(R) {
     output := f() |> signal()
-    effect(([output, sig, f]) => { 
+    effect(([output, f]) => { 
         output->set(f())
     })
     return output
