@@ -9,39 +9,29 @@ use operators {*}
 use style {*}
 use view {*}
 
+
+
 use core.misc {*}
 use core.js
 
 
 
-ext_html :: #compiler_extension "./ext/html.onyx" {
-    new_html_element
-}
-
-ext_event :: #compiler_extension "./ext/event.onyx" {
-    new_event_listener
-}
+ext_html :: #compiler_extension "./ext/html.onyx" {new_html_element}
+ext_event :: #compiler_extension "./ext/event.onyx" {new_event_listener}
 
 ext_html.new_html_element!{a, abbr, address, area, article, aside, audio, b, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, data, datalist, dd, del, details, dfn, dialog, div, dl, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, head, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, main, map, mark, menu, menuitem, meta, meter, nav, noscript, object, ol, optgroup, option, output, p, param, picture, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, summary, sup, table, tbody, td, template, textarea, tfoot, th, thead, time, title, tr, track, u, ul, var, video, wbr}
 ext_event.new_event_listener!{abort, afterprint, animationend, animationiteration, animationstart, beforeprint, beforeunload, blur, canplay, canplaythrough, change, click, contextmenu, copy, cut, dblclick, drag, dragend, dragenter, dragleave, dragover, dragstart, drop, durationchange, ended, error, focus, focusin, focusout, fullscreenchange, fullscreenerror, hashchange, input, invalid, keydown, keypress, keyup, load, loadeddata, loadedmetadata, loadstart, message, mousedown, mouseenter, mouseleave, mousemove, mouseout, mouseover, mouseup, mousewheel, offline, online, open, pagehide, pageshow, paste, pause, play, playing, popstate, progress, ratechange, resize, reset, scroll, search, seeked, seeking, select, show, stalled, storage, submit, suspend, timeupdate, toggle, touchcancel, touchend, touchmove, touchstart, transitionend, unload, volumechange, waiting, wheel}
 
 
+
 main :: () {
-    count1 := signal(0)
-    count2 := signal(2)
-    sum := memo(([count1, count2]) -> i32 { 
-        return count1->get() + count2->get()
-    })
     div(
-        "Count 1: ", count1
-        br()
-        "Count 2: ", count2
-        br()
-        "Sum: ", sum
-        br()
-        button("Increment 1") |> onclick(([count1]) => count1->increment())
-        button("Increment 2") |> onclick(([count2]) => count2->increment())
+        h1("hello, world1") |> push_pile("header1")
+        h1("hello, world2") |> push_pile("header2")
+        button("exclaim1") |> onclick((el) => pull_pile("header1") |> extend("!"))
+        button("exclaim2") |> onclick((el) => from_pile("header2") |> extend("!"))
     ) |> append(get_body())
+
 } 
 
 
