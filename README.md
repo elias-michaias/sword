@@ -41,9 +41,11 @@ Here are some examples of Sword in action:
 ## Reactivity
 ```fsharp
 count := signal(0)
+double := memo(([count]) => count->get() * 2)
 
 div (
     "Count: ", count
+    "Double: ", double
     div (
         style("color: blue; padding: 2em; border: 1px solid blue")
         "Increment"
