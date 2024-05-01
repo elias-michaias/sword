@@ -20,53 +20,20 @@ ElementMessageId :: #distinct str
 ElementMessageAttr :: #distinct str
 ElementMessageStyle :: #distinct str
 
-class :: #match {
-    (class_: $T) -> ElementMessageClass {   
-        return cast(ElementMessageClass, tprintf("{}", class_))
-    }
-    (el: js.Value, class_: $T) -> js.Value {
-        for cls in class_ |> str.split(' ') {
-            el |> add_class(cls);
-        }
-    }
+_class :: (class_: $T) -> ElementMessageClass {   
+    return cast(ElementMessageClass, tprintf("{}", class_))
 }
 
-id :: #match {
-    (id_: $T) -> ElementMessageId {
-        return cast(ElementMessageId, tprintf("{}", id_))
-    }
-    (el: js.Value, id_: $T) -> js.Value {
-        return el |> set_id(tprintf("{}", id_));
-    }
+_id :: (id_: $T) -> ElementMessageId {
+    return cast(ElementMessageId, tprintf("{}", id_))
 }
 
-attr :: #match {
-    (attr_: $T) -> ElementMessageAttr {
-        return cast(ElementMessageAttr, tprintf("{}", attr_))
-    }
-    (el: js.Value, attr_: $T) -> js.Value {
-        attrs := attr_ |> str.split(' ');
-        for attr in attrs {
-            key_val := tprintf("{}", attr) |> str.split('=');
-            el |> set_attr(key_val[0], key_val[1]);
-        }
-    }
+_attr :: (attr_: $T) -> ElementMessageAttr {
+    return cast(ElementMessageAttr, tprintf("{}", attr_))
 }
 
-style :: #match {
-    (style_: $T) -> ElementMessageStyle {
-        return cast(ElementMessageStyle, tprintf("{}", style_))
-    }
-    (el: js.Value, style_: $T) -> js.Value {
-        styles := style_ |> str.split(';');
-        for style in styles {
-            key_val := tprintf("{}", style) |> str.split(':');
-            key := key_val[0] |> str.strip_whitespace();
-            val := key_val[1];
-            el |> set_style(key, key_val[1]);
-        }
-        return el
-    }
+_style :: (style_: $T) -> ElementMessageStyle {
+    return cast(ElementMessageStyle, tprintf("{}", style_))
 }
 
 extend :: (el: js.Value, args: ..any) -> js.Value {

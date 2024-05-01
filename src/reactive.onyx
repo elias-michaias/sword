@@ -1,8 +1,8 @@
 package sword.reactive
 
-#load "./dom.onyx"
 use sword.dom {*}
 use sword.style {*}
+use sword.view {*}
 
 use core {*}
 use core.misc {*}
@@ -36,6 +36,15 @@ signal :: (value: $T) -> Signal(T) {
     reactive_runtime.signal_values->push(.{ data = alloc.on_heap(value), type = T });
     id := reactive_runtime.signal_values.length - 1;
     return Signal(T).{ &reactive_runtime, id };
+}
+
+rw_signal :: (value: $T) -> (() -> T, (T) -> void) {
+    reactive_runtime.signal_values->push(.{ data = alloc.on_heap(value), type = T })
+    id := reactive_runtime.signal_values.length - 1
+    output := Signal(T).{ &reactive_runtime, id }
+    getter: () -> T     = ([output]) => output->get()
+    setter: (T) -> void = ([output], value) => output->set(value)
+    return getter, setter
 }
 
 effect :: (f: () -> void) => {
@@ -116,7 +125,7 @@ attr_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: [] Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair(str, #type () -> bool)) -> js.Value {
         for clause in clauses {
             attr_contract(el, clause)
         } 
@@ -156,7 +165,7 @@ class_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: [] Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair(str, #type () -> bool)) -> js.Value {
         for clause in clauses {
             class_contract(el, clause)
         }
@@ -184,7 +193,7 @@ id_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: [] Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair(str, #type () -> bool)) -> js.Value {
         for clause in clauses {
             id_contract(el, clause)
         } 
@@ -239,13 +248,55 @@ style_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: [] Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair(str, #type () -> bool)) -> js.Value {
         for clause in clauses {
             style_contract(el, clause)
         }
         return el
     }
 
+}
+
+child_contract :: #match {
+    (el: js.Value, clause: Pair([] js.Value, #type () -> bool)) -> js.Value {
+        first_child := get_dom() |> create("span") |> append(el)
+        second_child := get_dom() |> create("span") |> append(el)
+        if clause.first.length >= 1 {
+            clause.first[0] |> append(first_child)
+        }
+        if clause.first.length == 2 {
+            clause.first[1] |> append(second_child)
+        }
+        if clause.first.length > 2 {
+            console_log("ERROR: child_contract() supports up to two children")
+        }
+        effect(([el, clause, first_child, second_child]) => { 
+            if clause.first.length == 2 {
+                console_log("two children")
+                if clause.second() {
+                    first_child |> set_style("display", "block")
+                    second_child |> set_style("display", "none")
+                } else {
+                    second_child |> set_style("display", "block")
+                    first_child |> set_style("display", "none")
+                }
+            } elseif clause.first.length == 1 {
+                console_log("one child")
+                if clause.second() {
+                    first_child |> set_style("display", "block")
+                } else {
+                    first_child |> set_style("display", "none")
+                }
+            }
+        })
+        return el
+    }
+    (el: js.Value, clauses: ..Pair([] js.Value, #type () -> bool)) -> js.Value {
+        for clause in clauses {
+            child_contract(el, clause)
+        } 
+        return el
+    }
 }
 // contracts }}}
 

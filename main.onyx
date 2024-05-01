@@ -15,20 +15,24 @@ ext_event.new_event_listener!{abort, afterprint, animationend, animationiteratio
 use core.misc
 use core.js
 
-even_shy :: (input) => applicator(([input], el) =>
-    el |> style_contract(.[
+_even_shy :: input => applicator(([input], el) =>
+    el 
+    |> style_contract(
         .{"color: blue | color: red", ([input]) => input->get() % 2 == 0}
-        .{"text-decoration: underline |", ([input]) => input->get() % 2 == 0}
-    ])
+        .{"text-decoration: underline | font-style: italic", ([input]) => input->get() % 2 == 0}
+    )
+    |> class_contract(.{"even | odd", ([input]) => input->get() % 2 == 0})
+    |> child_contract(.{.[ h1("Hello"), h1("World") ], ([input]) => input->get() % 2 == 0})
 )
 
 main :: () {
     count := signal(0)
 
     div(
+        _id("app")
         h1(
-            "Count: ", count
-            even_shy(count)
+            "Count: ", count, "!"
+            _even_shy(count)
         ) 
 
         button("Increment") |> onclick(([count]) => count->increment())
