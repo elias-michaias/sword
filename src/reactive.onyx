@@ -67,106 +67,188 @@ bind :: (el: js.Value, f: (js.Value) -> void) -> js.Value {
     return el
 }
 
-// watch_clauses :: #match {
-//     (el: js.Value, clauses: [] Pair(str, () -> bool)) -> js.Value {
-//         for clause in clauses {
-//             attrs := clause.first |> str.split(' ');
-//             effect(([el, clause]) => { 
-//                 if clause.second {
-//                     for attr in attrs {
-//                         key_val := tprintf("{}", attr) |> str.split('=');
-//                         el |> set_attr(key_val[0], key_val[1]);
-//                     }
-//                 } else {
-//                     for attr in attrs {
-//                         key_val := tprintf("{}", attr) |> str.split('=');
-//                         el |> remove_attr(key_val[0]);
-//                     }
-//                 }
-//             })
-//         } 
-//         return el
-//     }
-// }
-
-bind_class_if :: (el: js.Value, classlist: str, f: () -> bool) -> js.Value {
-    output := f() |> signal()
-    effect(([output, f]) => { 
-        output->set(f())
-    })
-    effect(([output, el, classlist]) => { 
-        classes := classlist |> str.split(' ')
-        if output->get() {
-            for class in classes do el |> add_class(class)
-        } else {
-            for class in classes do el |> remove_class(class)
-        }
-    })
-    return el
+// contracts {{{
+attr_contract :: #match {
+    (el: js.Value, clause: Pair(str, #type () -> bool)) -> js.Value {
+        effect(([el, clause]) => { 
+            true_false := clause.first |> str.split('|')
+            true_attrs := true_false[0] |> str.split(' ')
+            false_attrs := true_false[1] |> str.split(' ')
+            if clause.second() {
+                for attr in false_attrs {
+                    if attr == "" do continue
+                    key_val := attr |> str.split('=')
+                    key := str.strip_whitespace(key_val[0])
+                    val := str.strip_whitespace(key_val[1])
+                    el |> remove_attr(key)
+                }
+                for attr in true_attrs {
+                    if attr == "" do continue
+                    key_val := attr |> str.split('=')
+                    key := str.strip_whitespace(key_val[0])
+                    val := str.strip_whitespace(key_val[1])
+                    if val == "!" {
+                        el |> remove_attr(key)
+                    } else {
+                        el |> set_attr(key, val)
+                    }
+                }
+            } else {
+                for attr in true_attrs {
+                    if attr == "" do continue
+                    key_val := attr |> str.split('=')
+                    key := str.strip_whitespace(key_val[0])
+                    val := str.strip_whitespace(key_val[1])
+                    el |> remove_attr(key)
+                }
+                for attr in false_attrs {
+                    if attr == "" do continue
+                    key_val := attr |> str.split('=')
+                    key := str.strip_whitespace(key_val[0])
+                    val := str.strip_whitespace(key_val[1])
+                    if val == "!" {
+                        el |> remove_attr(key)
+                    } else {
+                        el |> set_attr(key, val)
+                    }
+                }
+            }
+        })
+        return el
+    }
+    (el: js.Value, clauses: [] Pair(str, #type () -> bool)) -> js.Value {
+        for clause in clauses {
+            attr_contract(el, clause)
+        } 
+        return el
+    }
 }
 
-bind_id_if :: (el: js.Value, id: str, f: () -> bool) -> js.Value {
-    output := f() |> signal()
-    effect(([output, f]) => { 
-        output->set(f())
-    })
-    effect(([output, el, id]) => { 
-        if output->get() {
-            el->set("id", id)
-        } else {
-            el->set("id", "")
+class_contract :: #match {
+    (el: js.Value, clause: Pair(str, #type () -> bool)) -> js.Value {
+        effect(([el, clause]) => { 
+            classes := clause.first |> str.split('|');
+            true_classes := classes[0] |> str.split(' ');
+            false_classes := classes[1] |> str.split(' ');
+            if clause.second() {
+                if str.strip_whitespace(classes[0]) != "!" {
+                    for class in true_classes {
+                        if class != "" do el |> add_class(class)
+                    }
+                    for class in false_classes {
+                        if class != "" do el |> remove_class(class)
+                    }
+                } else {
+                    el |> remove_attr("class")
+                }
+            } else {
+                if str.strip_whitespace(classes[1]) != "!" {
+                    for class in false_classes {
+                        if class != "" do el |> add_class(class)
+                    }
+                    for class in true_classes {
+                        if class != "" do el |> remove_class(class)
+                    }
+                } else {
+                    el |> remove_attr("class")
+                }
+            }
+        })
+        return el
+    }
+    (el: js.Value, clauses: [] Pair(str, #type () -> bool)) -> js.Value {
+        for clause in clauses {
+            class_contract(el, clause)
         }
-    })
-    return el
+        return el
+    }
 }
 
-bind_attr_if :: (el: js.Value, attr_: str, f: () -> bool) -> js.Value {
-    output := f() |> signal()
-    effect(([output, f]) => { 
-        output->set(f())
-    })
-    effect(([output, el, attr_]) => { 
-        attrs := attr_ |> str.split(' ');
-        if output->get() {
-            for attr in attrs {
-                key_val := tprintf("{}", attr) |> str.split('=');
-                el |> set_attr(key_val[0], key_val[1]);
+id_contract :: #match {
+    (el: js.Value, clause: Pair(str, #type () -> bool)) -> js.Value {
+        effect(([el, clause]) => { 
+        ids := clause.first |> str.split('|');
+            if clause.second() {
+                if str.strip_whitespace(ids[0]) == "!" {
+                    el |> remove_id()
+                } else {
+                    el |> set_id(str.strip_whitespace(ids[0]))
+                }
+            } else {
+                if str.strip_whitespace(ids[1]) == "!" {
+                    el |> remove_id()
+                } else {
+                    el |> set_id(str.strip_whitespace(ids[1]))
+                }
             }
-        } else {
-            for attr in attrs {
-                key_val := tprintf("{}", attr) |> str.split('=');
-                el |> remove_attr(key_val[0]);
-            }
-        }
-    })
-    return el
+        })
+        return el
+    }
+    (el: js.Value, clauses: [] Pair(str, #type () -> bool)) -> js.Value {
+        for clause in clauses {
+            id_contract(el, clause)
+        } 
+        return el
+    }
 }
 
-bind_style_if :: (el: js.Value, style_: str, f: () -> bool) -> js.Value {
-    output := f() |> signal()
-    effect(([output, f]) => { 
-        output->set(f())
-    })
-    effect(([output, el, style_]) => { 
-        styles := style_ |> str.split(';');
-        if output->get() {
-            for style in styles {
-                key_val := tprintf("{}", style) |> str.split(':');
-                key := key_val[0] |> str.strip_whitespace();
-                val := key_val[1];
-                el |> set_style(key, key_val[1]);
+style_contract :: #match {
+    (el: js.Value, clause: Pair(str, #type () -> bool)) -> js.Value {
+        effect(([el, clause]) => { 
+            styles := clause.first |> str.split('|');
+            true_styles := styles[0] |> str.split(';');
+            false_styles := styles[1] |> str.split(';');
+
+            if clause.second() {
+                if str.strip_whitespace(styles[0]) != "!" {
+                    for style in false_styles {
+                        key_val := style |> str.split(':');
+                        key := key_val[0] |> str.strip_whitespace();
+                        val := key_val[1] 
+                        el |> remove_style(key)
+                    }
+                    for style in true_styles {
+                        key_val := style |> str.split(':');
+                        key := key_val[0] |> str.strip_whitespace();
+                        val := key_val[1] 
+                        el |> set_style(key, val)
+                    }
+                } else {
+                    console_log("removing style")
+                    el |> remove_attr("style")
+                }
+            } else {
+                if str.strip_whitespace(styles[1]) != "!" {
+                    for style in true_styles {
+                        key_val := style |> str.split(':');
+                        key := key_val[0] |> str.strip_whitespace();
+                        val := key_val[1] 
+                        el |> remove_style(key)
+                    }
+                    for style in false_styles {
+                        key_val := style |> str.split(':');
+                        key := key_val[0] |> str.strip_whitespace();
+                        val := key_val[1] 
+                        el |> set_style(key, val)
+                    }
+                } else {
+                    console_log("removing style")
+                    el |> remove_attr("style")
+                }
             }
-        } else {
-            for style in styles {
-                key_val := tprintf("{}", style) |> str.split(':');
-                key := key_val[0] |> str.strip_whitespace();
-                val := key_val[1];
-                el |> remove_style(key);
-            }
+        })
+        return el
+    }
+    (el: js.Value, clauses: [] Pair(str, #type () -> bool)) -> js.Value {
+        for clause in clauses {
+            style_contract(el, clause)
         }
-    })
-    return el
+        return el
+    }
+
 }
+// contracts }}}
+
 
 Signal :: struct (T: type_expr) {
     cx: &Runtime;

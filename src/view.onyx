@@ -103,7 +103,6 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
                 el |> set_id(tprintf("{}", cast(str) *any_as(targets_, ElementMessageId)));
             }
             case ElementMessageClass {
-                console_log("class!")
                 classes := cast(str) *any_as(targets_, ElementMessageClass) |> str.split(' ');
                 for class in classes {
                     el |> add_class(class);

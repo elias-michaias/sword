@@ -15,42 +15,23 @@ ext_event.new_event_listener!{abort, afterprint, animationend, animationiteratio
 use core.misc
 use core.js
 
-toggle_colors :: (input: Signal(bool)) => ([input] el: js.Value) -> js.Value {
-    return el |> bind((el, [input]) => {
-        if input->get() {
-            el |> set_style("color", "blue")
-        } else {
-            el |> set_style("color", "red")
-        }
-    })
-}
-
-toggle_italic :: (input) => applicator(([input], el) =>
-    el |> bind(([input], el) => {
-        if input->get() {
-            el |> set_style("font-style", "italic")
-        } else {
-            el |> set_style("font-style", "normal")
-        }
-    })
+even_shy :: (input) => applicator(([input], el) =>
+    el |> style_contract(.[
+        .{"color: blue | color: red", ([input]) => input->get() % 2 == 0}
+        .{"text-decoration: underline |", ([input]) => input->get() % 2 == 0}
+    ])
 )
 
-/* 
-
-
-*/
-
-
 main :: () {
-    toggleable := signal(false)
+    count := signal(0)
 
     div(
         h1(
-            "Hello, World!"
-           toggle_italic(toggleable)
-           toggle_colors(toggleable)
+            "Count: ", count
+            even_shy(count)
         ) 
-        button("Toggle") |> onclick(([toggleable]) => toggleable->toggle())
+
+        button("Increment") |> onclick(([count]) => count->increment())
     ) 
     |> append(get_body())
 } 
