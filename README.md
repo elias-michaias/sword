@@ -76,8 +76,8 @@ header_text := h1(style="color: green") (
 
 main_view :=
     div (
-        id("non-curried")
-        style("color: red; margin: 1em")
+        _id("non-curried")
+        _style("color: red; margin: 1em")
 
         header_text
         |> extend(
@@ -212,6 +212,41 @@ todolist :: () =>
 main :: () {
      todolist() |> append(get_body())
 } 
+```
+# Reactive Contracts and Applicators
+```fs
+// Applicators allow you to create a function that can
+// be called inside an element to apply behavior/props
+_even_shy :: (input) => applicator(([input], el) =>
+    el 
+    // Contracts use T | F signature for attributes
+    // apply from result of paired reactive function 
+    |> style_contract(
+        .{"color: blue | color: red", ([input]) => input->get() % 2 == 0}
+        .{"text-decoration: underline | font-style: italic", ([input]) => input->get() % 2 == 0}
+    )
+    |> class_contract(
+        .{"even | odd", ([input]) => input->get() % 2 == 0}
+    )
+    // Child contract uses 1 or 2-length slice of elements
+    // Still follows .[T, F] rendering pattern
+    |> child_contract(
+        .{.[ h1("Hello"), h1("World") ], ([input]) => input->get() % 2 == 0}
+    )
+)
+
+count := signal(0)
+
+div(
+    h1(
+        "Count: ", count
+        // By convention, precede applicator names 
+        // with underscore for readability
+        _even_shy(count)
+    ) 
+    button("Increment") |> onclick(([count]) => count->increment())
+) 
+|> append(get_body())
 ```
 
 # Installation

@@ -38,15 +38,6 @@ signal :: (value: $T) -> Signal(T) {
     return Signal(T).{ &reactive_runtime, id };
 }
 
-rw_signal :: (value: $T) -> (() -> T, (T) -> void) {
-    reactive_runtime.signal_values->push(.{ data = alloc.on_heap(value), type = T })
-    id := reactive_runtime.signal_values.length - 1
-    output := Signal(T).{ &reactive_runtime, id }
-    getter: () -> T     = ([output]) => output->get()
-    setter: (T) -> void = ([output], value) => output->set(value)
-    return getter, setter
-}
-
 effect :: (f: () -> void) => {
     reactive_runtime.effects->push(alloc.copy_closure(f, alloc.as_allocator(&reactive_runtime.effect_arena)));
     id := reactive_runtime.effects.length - 1;
@@ -223,7 +214,6 @@ style_contract :: #match {
                         el |> set_style(key, val)
                     }
                 } else {
-                    console_log("removing style")
                     el |> remove_attr("style")
                 }
             } else {
@@ -241,7 +231,6 @@ style_contract :: #match {
                         el |> set_style(key, val)
                     }
                 } else {
-                    console_log("removing style")
                     el |> remove_attr("style")
                 }
             }
@@ -272,7 +261,6 @@ child_contract :: #match {
         }
         effect(([el, clause, first_child, second_child]) => { 
             if clause.first.length == 2 {
-                console_log("two children")
                 if clause.second() {
                     first_child |> set_style("display", "block")
                     second_child |> set_style("display", "none")
@@ -281,7 +269,6 @@ child_contract :: #match {
                     first_child |> set_style("display", "none")
                 }
             } elseif clause.first.length == 1 {
-                console_log("one child")
                 if clause.second() {
                     first_child |> set_style("display", "block")
                 } else {

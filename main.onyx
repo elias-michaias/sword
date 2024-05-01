@@ -15,7 +15,7 @@ ext_event.new_event_listener!{abort, afterprint, animationend, animationiteratio
 use core.misc
 use core.js
 
-_even_shy :: input => applicator(([input], el) =>
+_even_shy :: (input) => applicator(([input], el) =>
     el 
     |> style_contract(
         .{"color: blue | color: red", ([input]) => input->get() % 2 == 0}
@@ -31,7 +31,7 @@ main :: () {
     div(
         _id("app")
         h1(
-            "Count: ", count, "!"
+            "Count: ", count
             _even_shy(count)
         ) 
 
