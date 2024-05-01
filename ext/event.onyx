@@ -54,7 +54,7 @@ on{} :: #match {
 
     (el: $T, func: () -> js.Value) -> #auto {
         el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
-            func(el);
+            func();
             return js.Undefined;
         }));
         return el;

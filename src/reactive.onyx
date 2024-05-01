@@ -1,7 +1,8 @@
-package reactive
+package sword.reactive
 
 #load "./dom.onyx"
-use dom {*}
+use sword.dom {*}
+use sword.style {*}
 
 use core {*}
 use core.misc {*}
@@ -40,9 +41,15 @@ signal :: (value: $T) -> Signal(T) {
 effect :: (f: () -> void) => {
     reactive_runtime.effects->push(alloc.copy_closure(f, alloc.as_allocator(&reactive_runtime.effect_arena)));
     id := reactive_runtime.effects.length - 1;
-
     run_effect(id);
-    return id
+}
+
+run_effect :: (effect_id: u32) {
+    prev_running_effect := reactive_runtime.running_effect;
+    reactive_runtime.running_effect = effect_id;
+    id_effect := reactive_runtime.effects[effect_id];
+    id_effect();
+    reactive_runtime.running_effect = prev_running_effect;
 }
 
 memo :: (f: () -> $R) -> Signal(R) {
@@ -53,16 +60,113 @@ memo :: (f: () -> $R) -> Signal(R) {
     return output
 }
 
-run_effect :: (effect_id: u32) {
-    prev_running_effect := reactive_runtime.running_effect;
-    reactive_runtime.running_effect = effect_id;
-
-    id_effect := reactive_runtime.effects[effect_id];
-    id_effect();
-
-    reactive_runtime.running_effect = prev_running_effect;
+bind :: (el: js.Value, f: (js.Value) -> void) -> js.Value {
+    effect(([f, el]) => { 
+        f(el)
+    })
+    return el
 }
 
+// watch_clauses :: #match {
+//     (el: js.Value, clauses: [] Pair(str, () -> bool)) -> js.Value {
+//         for clause in clauses {
+//             attrs := clause.first |> str.split(' ');
+//             effect(([el, clause]) => { 
+//                 if clause.second {
+//                     for attr in attrs {
+//                         key_val := tprintf("{}", attr) |> str.split('=');
+//                         el |> set_attr(key_val[0], key_val[1]);
+//                     }
+//                 } else {
+//                     for attr in attrs {
+//                         key_val := tprintf("{}", attr) |> str.split('=');
+//                         el |> remove_attr(key_val[0]);
+//                     }
+//                 }
+//             })
+//         } 
+//         return el
+//     }
+// }
+
+bind_class_if :: (el: js.Value, classlist: str, f: () -> bool) -> js.Value {
+    output := f() |> signal()
+    effect(([output, f]) => { 
+        output->set(f())
+    })
+    effect(([output, el, classlist]) => { 
+        classes := classlist |> str.split(' ')
+        if output->get() {
+            for class in classes do el |> add_class(class)
+        } else {
+            for class in classes do el |> remove_class(class)
+        }
+    })
+    return el
+}
+
+bind_id_if :: (el: js.Value, id: str, f: () -> bool) -> js.Value {
+    output := f() |> signal()
+    effect(([output, f]) => { 
+        output->set(f())
+    })
+    effect(([output, el, id]) => { 
+        if output->get() {
+            el->set("id", id)
+        } else {
+            el->set("id", "")
+        }
+    })
+    return el
+}
+
+bind_attr_if :: (el: js.Value, attr_: str, f: () -> bool) -> js.Value {
+    output := f() |> signal()
+    effect(([output, f]) => { 
+        output->set(f())
+    })
+    effect(([output, el, attr_]) => { 
+        attrs := attr_ |> str.split(' ');
+        if output->get() {
+            for attr in attrs {
+                key_val := tprintf("{}", attr) |> str.split('=');
+                el |> set_attr(key_val[0], key_val[1]);
+            }
+        } else {
+            for attr in attrs {
+                key_val := tprintf("{}", attr) |> str.split('=');
+                el |> remove_attr(key_val[0]);
+            }
+        }
+    })
+    return el
+}
+
+bind_style_if :: (el: js.Value, style_: str, f: () -> bool) -> js.Value {
+    output := f() |> signal()
+    effect(([output, f]) => { 
+        output->set(f())
+    })
+    effect(([output, el, style_]) => { 
+        styles := style_ |> str.split(';');
+        if output->get() {
+            for style in styles {
+                key_val := tprintf("{}", style) |> str.split(':');
+                key := key_val[0] |> str.strip_whitespace();
+                val := key_val[1];
+                el |> set_style(key, key_val[1]);
+            }
+        } else {
+            for style in styles {
+                key_val := tprintf("{}", style) |> str.split(':');
+                key := key_val[0] |> str.strip_whitespace();
+                val := key_val[1];
+                el |> remove_style(key);
+            }
+        }
+    })
+    return el
+}
 
 Signal :: struct (T: type_expr) {
     cx: &Runtime;

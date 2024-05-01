@@ -1,12 +1,12 @@
-package view
+package sword.view
 
 #load "./dom.onyx"
 #load "./reactive.onyx"
 #load "./style.onyx"
 
-use dom {*}
-use reactive {*}
-use style {*}
+use sword.dom {*}
+use sword.reactive {*}
+use sword.style {*}
 
 use core.js
 use core.misc {*}
@@ -65,6 +65,7 @@ style :: #match {
             val := key_val[1];
             el |> set_style(key, key_val[1]);
         }
+        return el
     }
 }
 
@@ -75,7 +76,7 @@ extend :: (el: js.Value, args: ..any) -> js.Value {
     return el;
 }
 
-apply :: #match {
+applicator :: #match {
     (func: (js.Value) -> js.Value) => ([func] el: js.Value) -> js.Value {
         return func(el)
     }
@@ -197,6 +198,12 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
             }
             case Signal(type_expr) {
                 reactor |> react_inner(*any_as(targets_, Signal(type_expr)))
+            }
+            case Signal(js.Value) {
+                output := *any_as(targets_, Signal(js.Value))
+                effect(([output, reactor]) => {
+                    reactor->set("innerHTML", output->get()->get("outerHTML"))
+                })
             }
         }
     }

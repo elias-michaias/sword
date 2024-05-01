@@ -1,5 +1,5 @@
 package {
-    name "sword" 
+    name "sword-test-serve" 
     author "elias-michaias" 
     url "https://github.com/elias-michaias/sword" 
     description "A fine-grained, functional, front-end framework for the web in Onyx." 
@@ -11,10 +11,14 @@ config {
     dependency_binary_path "./bin" 
 }
 
+dependencies {
+    "https://github.com/onyx-lang/pkg-http-server" "0.3.8" git="https://github.com/onyx-lang/pkg-http-server" 
+}
+
 lsp {
     mode "project" 
-    source_files "./main.onyx" 
-    runtime "js" 
+    source_files "./server.onyx" 
+    runtime "onyx" 
     include_dirs "" 
     working_dir "." 
 }
@@ -22,8 +26,8 @@ lsp {
 build {
     default {
         runtime "js" 
-        source "./main.onyx" 
-        target "./dist/app.wasm" 
+        source "./server.onyx" 
+        target "../dist/server.wasm" 
     }
 }
 

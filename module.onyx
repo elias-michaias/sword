@@ -1,10 +1,10 @@
 #load_all "./src"
-use dom {*}
-use head {*}
-use reactive {*}
-use route {*}
-use style {*}
-use view {*}
+use sword.dom {*}
+use sword.head {*}
+use sword.reactive {*}
+use sword.route {*}
+use sword.style {*}
+use sword.view {*}
 
 use core.misc {*}
 use core.js
