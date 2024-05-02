@@ -67,7 +67,7 @@ bind :: (el: js.Value, f: (js.Value) -> void) -> js.Value {
 attr_contract :: #match {
     (el: js.Value, clause: Pair([2] str, #type () -> bool)) -> js.Value {
         effect(([el, clause]) => { 
-            true_false := Array.make(clause.first)
+            true_false := clause.first
             true_attrs := true_false[0] |> str.split(' ')
             false_attrs := true_false[1] |> str.split(' ')
             if clause.second() {
@@ -113,9 +113,7 @@ attr_contract :: #match {
         return el
     }
     (el: js.Value, clauses: ..Pair([2] str, #type () -> bool)) -> js.Value {
-        for clause in clauses {
-            attr_contract(el, clause)
-        } 
+        for clause in clauses do attr_contract(el, clause)
         return el
     }
 }
@@ -123,7 +121,7 @@ attr_contract :: #match {
 class_contract :: #match {
     (el: js.Value, clause: Pair([2] str, #type () -> bool)) -> js.Value {
         effect(([el, clause]) => { 
-            classes := Array.make(clause.first)
+            classes := clause.first
             true_classes := classes[0] |> str.split(' ');
             false_classes := classes[1] |> str.split(' ');
             if clause.second() {
@@ -153,9 +151,7 @@ class_contract :: #match {
         return el
     }
     (el: js.Value, clauses: ..Pair([2] str, #type () -> bool)) -> js.Value {
-        for clause in clauses {
-            class_contract(el, clause)
-        }
+        for clause in clauses do class_contract(el, clause)
         return el
     }
 }
@@ -163,7 +159,7 @@ class_contract :: #match {
 id_contract :: #match {
     (el: js.Value, clause: Pair([2] str, #type () -> bool)) -> js.Value {
         effect(([el, clause]) => { 
-        ids := Array.make(clause.first)
+        ids := clause.first
             if clause.second() {
                 if str.strip_whitespace(ids[0]) == "!" {
                     el |> remove_id()
@@ -181,9 +177,7 @@ id_contract :: #match {
         return el
     }
     (el: js.Value, clauses: ..Pair([2] str, #type () -> bool)) -> js.Value {
-        for clause in clauses {
-            id_contract(el, clause)
-        } 
+        for clause in clauses do id_contract(el, clause)
         return el
     }
 }
@@ -191,7 +185,7 @@ id_contract :: #match {
 style_contract :: #match {
     (el: js.Value, clause: Pair([2] str, #type () -> bool)) -> js.Value {
         effect(([el, clause]) => { 
-            styles := Array.make(clause.first)
+            styles := clause.first
             true_styles := styles[0] |> str.split(';');
             false_styles := styles[1] |> str.split(';');
 
@@ -234,50 +228,38 @@ style_contract :: #match {
         return el
     }
     (el: js.Value, clauses: ..Pair([2] str, #type () -> bool)) -> js.Value {
-        for clause in clauses {
-            style_contract(el, clause)
-        }
+        for clause in clauses do style_contract(el, clause)
         return el
     }
 
 }
 
 child_contract :: #match {
-    (el: js.Value, clause: Pair([] js.Value, #type () -> bool)) -> js.Value {
+    (el: js.Value, clause: Pair([2] any, #type () -> bool)) -> js.Value {
+        condition := clause.second
+        clause__ := any_deep_copy(clause.first)
+
+        first := clause__[0]
+        second := clause__[1]
+
         first_child := get_dom() |> create("span") |> append(el)
         second_child := get_dom() |> create("span") |> append(el)
-        if clause.first.length >= 1 {
-            clause.first[0] |> append(first_child)
-        }
-        if clause.first.length == 2 {
-            clause.first[1] |> append(second_child)
-        }
-        if clause.first.length > 2 {
-            console_log("ERROR: child_contract() supports up to two children")
-        }
-        effect(([el, clause, first_child, second_child]) => { 
-            if clause.first.length == 2 {
-                if clause.second() {
-                    first_child |> set_style("display", "block")
-                    second_child |> set_style("display", "none")
-                } else {
-                    second_child |> set_style("display", "block")
-                    first_child |> set_style("display", "none")
-                }
-            } elseif clause.first.length == 1 {
-                if clause.second() {
-                    first_child |> set_style("display", "block")
-                } else {
-                    first_child |> set_style("display", "none")
-                }
+        
+        console_log(first)
+
+        effect(([condition, first_child, second_child]) => { 
+            if condition() {
+                first_child |> set_style("display", "block")
+                second_child |> set_style("display", "none")
+            } else {
+                second_child |> set_style("display", "block")
+                first_child |> set_style("display", "none")
             }
         })
         return el
     }
-    (el: js.Value, clauses: ..Pair([2] js.Value, #type () -> bool)) -> js.Value {
-        for clause in clauses {
-            child_contract(el, clause)
-        } 
+    (el: js.Value, clauses: ..Pair([2] any, #type () -> bool)) -> js.Value {
+        for clause in clauses do child_contract(el, clause)
         return el
     }
 }
@@ -487,3 +469,14 @@ Signal(bool).toggle :: (self: #Self) {
 }
 
 // signal helper methods }}}
+
+
+// forms {{{
+model :: (el: js.Value, signal: Signal($T)) -> js.Value {
+    get_dom()->call("addEventListener", "input", js.func((this, args, [el, signal]) => {
+        signal->set(el |> get_value());
+        return js.Undefined;
+    }));
+    return el;
+}
+// forms }}}

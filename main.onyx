@@ -5,26 +5,34 @@ use core {*}
 _even_shy :: (input) => applicator(([input], el) =>
     el 
     |> style_contract(
-        .{.["color: blue", "color: red"], ([input]) => input->get() % 2 == 0}
-        .{.["text-decoration: underline", "font-style: italic"], ([input]) => input->get() % 2 == 0}
+        .{.["color: blue", "color: red"]
+            ([input]) => input->get() % 2 == 0}
+        .{.["text-decoration: underline", "font-style: italic"]
+            ([input]) => input->get() % 2 == 0}
     )
     |> id_contract(
-        .{.["special", "weird"], ([input]) => input->get() % 2 == 0}
+        .{.["special", "weird"]
+            ([input]) => input->get() % 2 == 0}
     )
     |> class_contract(
-        .{.["", "odd"], ([input]) => input->get() % 2 == 0}
-        .{.["shy", ""], ([input]) => input->get() % 2 == 0}
-    )
-    |> child_contract(
-        .{.[ h1("Hello!"), h1("World!") ], ([input]) => input->get() % 2 == 0}
-    )
+        .{.["", "odd"]
+            ([input]) => input->get() % 2 == 0}
+        .{.["shy", ""]
+            ([input]) => input->get() % 2 == 0}
+    ) 
     |> attr_contract(
-        .{.["href=#target", ""], ([input]) => input->get() % 2 == 0}
+        .{.["href=#target", ""]
+            ([input]) => input->get() % 2 == 0}
     )
+    // |> child_contract(
+    //     .{.[ h1("Hello!"), h1("World!") ]
+    //         ([input]) => input->get() % 2 == 0}
+    // )
 )
 
 main :: () {
     count := signal(0)
+    msg := signal("")
 
     div(
         _id("app")
@@ -32,8 +40,17 @@ main :: () {
             "Count: ", count
             _even_shy(count)
         ) 
-
         button("Increment") |> onclick(([count]) => count->increment())
+        br()
+        textarea(attr="placeholder=Type here...")() |> model(msg)
+        br()
+        span(msg) |> style_contract(
+            .{.["color: blue", "color: red"]
+                ([msg]) => msg->get().length % 2 == 0}
+            .{.["text-decoration: underline", "font-style: italic"]
+                ([msg]) => msg->get().length % 3 == 0}
+        )
+        br()
     ) 
     |> append(get_body())
 } 

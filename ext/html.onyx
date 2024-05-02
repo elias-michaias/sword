@@ -42,7 +42,7 @@ handle_html :: (
         }
         return new_el
     }
-    (class := \"\", id := \"\", attr := \"\", style := \"\") => ([class, id, attr, style] args: ..any) -> js.Value {
+    (class, id, attr, style := \"\") => ([class, id, attr, style] args: ..any) -> js.Value {
             new_el := get_dom()
             |> create(\"{}\")
             if class != \"\" do new_el |> set_class(class)

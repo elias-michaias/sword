@@ -255,6 +255,24 @@ div(
 |> append(get_body())
 ```
 
+# Reactive Form Input Modelling
+```fs
+msg := signal("")
+
+div(
+    textarea(attr="placeholder=Type here...")() |> model(msg)
+    br()
+    span(msg) |> style_contract(
+        .{.["color: blue", "color: red"]
+            ([msg]) => msg->get().length % 2 == 0}
+        .{.["text-decoration: underline", "font-style: italic"]
+            ([msg]) => msg->get().length % 3 == 0}
+    )
+    br()
+) 
+|> append(get_body())
+```
+
 # Installation
 ```
 onyx self-upgrade nightly
