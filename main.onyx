@@ -1,22 +1,26 @@
 #load "./module.onyx"
-use sword.dom {*}
-use sword.head {*}
-use sword.reactive {*}
-use sword.route {*}
-use sword.style {*}
-use sword.view {*}
-
-use core.misc
-use core.js
+use sword {*}
+use core {*}
 
 _even_shy :: (input) => applicator(([input], el) =>
     el 
     |> style_contract(
-        .{"color: blue | color: red", ([input]) => input->get() % 2 == 0}
-        .{"text-decoration: underline | font-style: italic", ([input]) => input->get() % 2 == 0}
+        .{.["color: blue", "color: red"], ([input]) => input->get() % 2 == 0}
+        .{.["text-decoration: underline", "font-style: italic"], ([input]) => input->get() % 2 == 0}
     )
-    |> class_contract(.{"even | odd", ([input]) => input->get() % 2 == 0})
-    |> child_contract(.{.[ h1("Hello"), h1("World") ], ([input]) => input->get() % 2 == 0})
+    |> id_contract(
+        .{.["special", "weird"], ([input]) => input->get() % 2 == 0}
+    )
+    |> class_contract(
+        .{.["", "odd"], ([input]) => input->get() % 2 == 0}
+        .{.["shy", ""], ([input]) => input->get() % 2 == 0}
+    )
+    |> child_contract(
+        .{.[ h1("Hello!"), h1("World!") ], ([input]) => input->get() % 2 == 0}
+    )
+    |> attr_contract(
+        .{.["href=#target", ""], ([input]) => input->get() % 2 == 0}
+    )
 )
 
 main :: () {

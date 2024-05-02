@@ -1,12 +1,4 @@
-package sword.view
-
-#load "./dom.onyx"
-#load "./reactive.onyx"
-#load "./style.onyx"
-
-use sword.dom {*}
-use sword.reactive {*}
-use sword.style {*}
+package sword
 
 use core.js
 use core.misc {*}

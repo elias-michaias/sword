@@ -1,4 +1,4 @@
-package sword.dom
+package sword
 
 use core.js
 use core.conv
@@ -6,12 +6,6 @@ use core.misc {*}
 use core {
     tprintf
 }
-
-#load "./reactive.onyx"
-use sword.reactive {*}
-
-#load "./view.onyx"
-use sword.view {*}
 
 ElementCollection :: #distinct js.Value
 

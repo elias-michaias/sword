@@ -1,8 +1,4 @@
-package sword.reactive
-
-use sword.dom {*}
-use sword.style {*}
-use sword.view {*}
+package sword
 
 use core {*}
 use core.misc {*}
@@ -69,9 +65,9 @@ bind :: (el: js.Value, f: (js.Value) -> void) -> js.Value {
 
 // contracts {{{
 attr_contract :: #match {
-    (el: js.Value, clause: Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clause: Pair([2] str, #type () -> bool)) -> js.Value {
         effect(([el, clause]) => { 
-            true_false := clause.first |> str.split('|')
+            true_false := Array.make(clause.first)
             true_attrs := true_false[0] |> str.split(' ')
             false_attrs := true_false[1] |> str.split(' ')
             if clause.second() {
@@ -116,7 +112,7 @@ attr_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: ..Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair([2] str, #type () -> bool)) -> js.Value {
         for clause in clauses {
             attr_contract(el, clause)
         } 
@@ -125,9 +121,9 @@ attr_contract :: #match {
 }
 
 class_contract :: #match {
-    (el: js.Value, clause: Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clause: Pair([2] str, #type () -> bool)) -> js.Value {
         effect(([el, clause]) => { 
-            classes := clause.first |> str.split('|');
+            classes := Array.make(clause.first)
             true_classes := classes[0] |> str.split(' ');
             false_classes := classes[1] |> str.split(' ');
             if clause.second() {
@@ -156,7 +152,7 @@ class_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: ..Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair([2] str, #type () -> bool)) -> js.Value {
         for clause in clauses {
             class_contract(el, clause)
         }
@@ -165,9 +161,9 @@ class_contract :: #match {
 }
 
 id_contract :: #match {
-    (el: js.Value, clause: Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clause: Pair([2] str, #type () -> bool)) -> js.Value {
         effect(([el, clause]) => { 
-        ids := clause.first |> str.split('|');
+        ids := Array.make(clause.first)
             if clause.second() {
                 if str.strip_whitespace(ids[0]) == "!" {
                     el |> remove_id()
@@ -184,7 +180,7 @@ id_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: ..Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair([2] str, #type () -> bool)) -> js.Value {
         for clause in clauses {
             id_contract(el, clause)
         } 
@@ -193,9 +189,9 @@ id_contract :: #match {
 }
 
 style_contract :: #match {
-    (el: js.Value, clause: Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clause: Pair([2] str, #type () -> bool)) -> js.Value {
         effect(([el, clause]) => { 
-            styles := clause.first |> str.split('|');
+            styles := Array.make(clause.first)
             true_styles := styles[0] |> str.split(';');
             false_styles := styles[1] |> str.split(';');
 
@@ -237,7 +233,7 @@ style_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: ..Pair(str, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair([2] str, #type () -> bool)) -> js.Value {
         for clause in clauses {
             style_contract(el, clause)
         }
@@ -278,7 +274,7 @@ child_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: ..Pair([] js.Value, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair([2] js.Value, #type () -> bool)) -> js.Value {
         for clause in clauses {
             child_contract(el, clause)
         } 

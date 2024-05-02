@@ -1,7 +1,4 @@
-package sword.head
-
-#load "./dom.onyx"
-use sword.dom {*}
+package sword
 
 use core.js
 use core {

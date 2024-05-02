@@ -1,7 +1,6 @@
-package sword.style
+package sword
 
 use core.js
-
 
 /// This function retrieves the value of a specific style attribute from an element.
 /// - el: The element from which to retrieve the style attribute.

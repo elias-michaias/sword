@@ -221,20 +221,24 @@ main :: () {
 // be called inside an element to apply behavior/props
 _even_shy :: (input) => applicator(([input], el) =>
     el 
-    // Contracts use T | F signature for attributes
+    // Contracts use .[T, F] signature for attributes
     // apply from result of paired reactive function 
     |> style_contract(
-        .{"color: blue | color: red", ([input]) => input->get() % 2 == 0}
-        .{"text-decoration: underline | font-style: italic", ([input]) => input->get() % 2 == 0}
+        .{.["color: blue", "color: red"]
+            ([input]) => input->get() % 2 == 0}
+        .{.["text-decoration: underline", "font-style: italic"]
+            ([input]) => input->get() % 2 == 0}
     )
     |> class_contract(
-        .{"even | odd", ([input]) => input->get() % 2 == 0}
-    )
-    // Child contract uses 1 or 2-length slice of elements
-    // Still follows .[T, F] rendering pattern
+        .{.["even", "odd"], ([input]) => input->get() % 2 == 0})
+    // Child contract can use 1-length slice for truth statements too
     |> child_contract(
-        .{.[ h1("Hello"), h1("World") ], ([input]) => input->get() % 2 == 0}
-    )
+        .{.[ h1("Hello"), h1("World") ], ([input]) => input->get() % 2 == 0})
+    |> attr_contract(
+        .{.["href=#target", ""]
+            ([input]) => input->get() % 4 == 0}
+        .{.["", "type=funny"]
+            ([input]) => input->get() % 8 == 0})
 )
 
 count := signal(0)

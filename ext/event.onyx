@@ -24,6 +24,8 @@ handle_event :: (
 
     events := em.body |> str.split(',')
 
+    // code->append("on :: struct {")
+
     for event in events {
         event = event |> str.strip_whitespace()
         code->append(tprintf("
@@ -159,6 +161,8 @@ trigger :: (name: str) -> void {
     get_dom()->call(\"dispatchEvent\", event);
 }
         "))
+
+    // code->append("}")
     // eprintf("{p}\n\n", cast(str) code)
     return .{ Ok = code }
 }
