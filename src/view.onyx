@@ -12,19 +12,19 @@ ElementMessageId :: #distinct str
 ElementMessageAttr :: #distinct str
 ElementMessageStyle :: #distinct str
 
-_class :: (class_: $T) -> ElementMessageClass {   
+class :: (class_: $T) -> ElementMessageClass {   
     return cast(ElementMessageClass, tprintf("{}", class_))
 }
 
-_id :: (id_: $T) -> ElementMessageId {
+id :: (id_: $T) -> ElementMessageId {
     return cast(ElementMessageId, tprintf("{}", id_))
 }
 
-_attr :: (attr_: $T) -> ElementMessageAttr {
+attr :: (attr_: $T) -> ElementMessageAttr {
     return cast(ElementMessageAttr, tprintf("{}", attr_))
 }
 
-_style :: (style_: $T) -> ElementMessageStyle {
+style :: (style_: $T) -> ElementMessageStyle {
     return cast(ElementMessageStyle, tprintf("{}", style_))
 }
 

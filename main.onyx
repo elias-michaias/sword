@@ -31,18 +31,10 @@ _even_shy :: (input) => applicator(([input], el) =>
 )
 
 main :: () {
-    count := signal(0)
     msg := signal("")
 
     div(
-        _id("app")
-        h1(
-            "Count: ", count
-            _even_shy(count)
-        ) 
-        button("Increment") |> onclick(([count]) => count->increment())
-        br()
-        textarea(attr="placeholder=Type here...")() |> model(msg)
+        textarea(attr="placeholder=Type...")() |> model(msg)
         br()
         span(msg) |> style_contract(
             .{.["color: blue", "color: red"]

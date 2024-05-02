@@ -78,8 +78,8 @@ header_text := h1(style="color: green") (
 
 main_view :=
     div (
-        _id("non-curried")
-        _style("color: red; margin: 1em")
+        id("non-curried")
+        style("color: red; margin: 1em")
 
         header_text
         |> extend(
@@ -260,7 +260,7 @@ div(
 msg := signal("")
 
 div(
-    textarea(attr="placeholder=Type here...")() |> model(msg)
+    textarea(attr="placeholder=Type...")() |> model(msg)
     br()
     span(msg) |> style_contract(
         .{.["color: blue", "color: red"]
