@@ -14,6 +14,9 @@ Runtime :: struct {
     effects: [..] () -> void;
 
     effect_arena: alloc.arena.Arena;
+
+    true_signals: [..] any
+    signal_store: Map(str, u32)
 }
 
 reactive_runtime: Runtime;
@@ -31,7 +34,18 @@ reactive_runtime: Runtime;
 signal :: (value: $T) -> Signal(T) {
     reactive_runtime.signal_values->push(.{ data = alloc.on_heap(value), type = T });
     id := reactive_runtime.signal_values.length - 1;
-    return Signal(T).{ &reactive_runtime, id };
+    output := Signal(T).{ &reactive_runtime, id }
+    reactive_runtime.true_signals->push(output)
+    return output
+}
+
+rw_signal :: (value: $T) => {
+    reactive_runtime.signal_values->push(.{ data = alloc.on_heap(value), type = T });
+    id := reactive_runtime.signal_values.length - 1;
+    output := Signal(T).{ &reactive_runtime, id };
+    getter: () -> T = ([output]) => output->get()
+    setter: (T) -> void = ([output], value) => output->set(value)
+    return getter, setter
 }
 
 effect :: (f: () -> void) => {
@@ -62,6 +76,244 @@ bind :: (el: js.Value, f: (js.Value) -> void) -> js.Value {
     })
     return el
 }
+
+Signal :: struct (T: type_expr) {
+    cx: &Runtime;
+    id: u32;
+}
+
+Signal.get :: (self: #Self) -> self.T {
+    v := self.cx.signal_values[self.id];
+
+    self.cx.running_effect->with([ef] {
+        subs := self.cx.signal_subscribers->get_ptr_or_create(self.id);
+        subs->insert(ef);
+    });
+
+    return *any_as(v, self.T); 
+}
+
+Signal.get_as_type :: (s: rawptr, type: type_expr) -> any {
+    Untyped_Signal :: struct {
+        cx: &Runtime;
+        id: u32;
+    }
+    us := cast(&Untyped_Signal) s;
+    us.cx.running_effect->with([ef] {
+        subs := us.cx.signal_subscribers->get_ptr_or_create(us.id);
+        subs->insert(ef);
+    });
+    return us.cx.signal_values[us.id];
+}
+
+
+Signal.set :: #match {
+    (self: #Self, value: self.T) {
+        v := &self.cx.signal_values[self.id];
+        if v.type != self.T do return;
+
+        *cast(&self.T) v.data = value;
+
+        if subs := self.cx.signal_subscribers->get_ptr(self.id); subs {
+            listeners := subs->as_iter()
+                            ->map(x => *x)
+                            ->collect(context.temp_allocator);
+
+            subs->clear();
+
+            for listeners {
+                run_effect(it);
+            }
+        }
+    }
+    (self: #Self, func: (self.T) -> self.T ) {
+        self->get() |> func() |> self->set()
+    }
+    (self: #Self, func: () -> self.T ) {
+        func() |> self->set()
+    }
+}
+
+Signal.store :: (sig: Signal($T), key: str) -> Signal(T) {
+    if !reactive_runtime.signal_store->has(key) {
+        reactive_runtime.signal_store->put(key, sig.id)
+    }
+    return sig
+}
+
+signal_store_clear :: () {
+    reactive_runtime.signal_store->clear()
+}
+
+SignalId :: #distinct u32
+
+signalize :: (key: str) -> SignalId {
+    id := reactive_runtime.signal_store->get(key)->unwrap()
+    return cast(SignalId) id
+}
+
+SignalId.to :: (self: #Self, $T: type_expr) -> Signal(T) {
+    id := cast(u32) self;
+    val := *any_as(reactive_runtime.signal_values[id], Pair(u32, type_expr))
+    return Signal(T).{ &reactive_runtime, val.first }
+}
+
+// reaction logic }}}
+
+// dom integration {{{
+
+react_inner :: (el: js.Value, args_: ..any) -> js.Value {
+    args := any_deep_copy(args_);
+    effect(([el, args]) => {
+        result: dyn_str;
+        use runtime.info;
+
+        for arg in args {
+            if info.struct_constructed_from(arg.type, Signal) {
+                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
+                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
+            } else {
+                conv.format_va(&result, "{}", any.[ arg ]);
+            }
+        }
+        el->set("innerHTML", cast(str) result);
+    });
+
+    return el;
+}
+
+react_outer :: (el: js.Value, args_: ..any) -> js.Value {
+    args := any_deep_copy(args_);
+    effect(([el, args]) => {
+        result: dyn_str;
+        use runtime.info;
+
+        for arg in args {
+            if info.struct_constructed_from(arg.type, Signal) {
+                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
+                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
+            } else {
+                conv.format_va(&result, "{}", any.[ arg ]);
+            }
+        }
+        el->set("outerHTML", cast(str) result);
+    });
+
+    return el;
+}
+
+react_text :: (el: js.Value, args_: ..any) -> js.Value {
+    args := any_deep_copy(args_);
+    effect(([el, args]) => {
+        result: dyn_str;
+        use runtime.info;
+
+        for arg in args {
+            if info.struct_constructed_from(arg.type, Signal) {
+                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
+                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
+            } else {
+                conv.format_va(&result, "{}", any.[ arg ]);
+            }
+        }
+        el->set("textContent", cast(str) result);
+    });
+
+    return el;
+}
+
+// dom integration }}}
+ 
+// signal helper methods {{{
+
+    // increment and decrement {{{
+    Signal(f32).decrement :: (self: #Self) {
+        self->set(self->get() - 1.0)
+    }
+
+    Signal(f32).increment :: (self: #Self) {
+        self->set(self->get() + 1.0)
+    }
+
+    Signal(f64).decrement :: (self: #Self) {
+        self->set(self->get() - 1.0)
+    }
+
+    Signal(f64).increment :: (self: #Self) {
+        self->set(self->get() + 1.0)
+    }
+
+    Signal(i16).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(i16).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(i32).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(i32).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(i64).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(i64).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(i8).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(i8).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(u16).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(u16).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(u32).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(u32).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(u64).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(u64).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+
+    Signal(u8).decrement :: (self: #Self) {
+        self->set(self->get() - 1)
+    }
+
+    Signal(u8).increment :: (self: #Self) {
+        self->set(self->get() + 1)
+    }
+    // increment and decrement }}}
+
+Signal(bool).toggle :: (self: #Self) {
+    self->set(!self->get())
+}
+
+// signal helper methods }}}
+
 
 // contracts {{{
 attr_contract :: #match {
@@ -235,17 +487,14 @@ style_contract :: #match {
 }
 
 child_contract :: #match {
-    (el: js.Value, clause: Pair([2] any, #type () -> bool)) -> js.Value {
+    (el: js.Value, clause: Pair([2] js.Value, #type () -> bool)) -> js.Value {
         condition := clause.second
-        clause__ := any_deep_copy(clause.first)
 
-        first := clause__[0]
-        second := clause__[1]
+        first := clause.first[0]
+        second := clause.first[1]
 
-        first_child := get_dom() |> create("span") |> append(el)
-        second_child := get_dom() |> create("span") |> append(el)
-        
-        console_log(first)
+        first_child := get_dom() |> create("span") |> append(el) |> extend(first)
+        second_child := get_dom() |> create("span") |> append(el) |> extend(second)
 
         effect(([condition, first_child, second_child]) => { 
             if condition() {
@@ -258,225 +507,20 @@ child_contract :: #match {
         })
         return el
     }
-    (el: js.Value, clauses: ..Pair([2] any, #type () -> bool)) -> js.Value {
+    (el: js.Value, clauses: ..Pair([2] js.Value, #type () -> bool)) -> js.Value {
         for clause in clauses do child_contract(el, clause)
         return el
     }
 }
+
+show :: (el: js.Value, clause: #type () -> bool) -> js.Value {
+    effect(([el, clause]) => { 
+        if clause() {
+            el |> set_style("display", "block")
+        } else {
+            el |> set_style("display", "none")
+        }
+    })
+    return el
+}
 // contracts }}}
-
-
-Signal :: struct (T: type_expr) {
-    cx: &Runtime;
-    id: u32;
-}
-
-Signal.get :: (self: #Self) -> self.T {
-    v := self.cx.signal_values[self.id];
-
-    self.cx.running_effect->with([ef] {
-        subs := self.cx.signal_subscribers->get_ptr_or_create(self.id);
-        subs->insert(ef);
-    });
-
-    return *any_as(v, self.T); 
-}
-
-Signal.get_as_type :: (s: rawptr, type: type_expr) -> any {
-    Untyped_Signal :: struct {
-        cx: &Runtime;
-        id: u32;
-    }
-    us := cast(&Untyped_Signal) s;
-    us.cx.running_effect->with([ef] {
-        subs := us.cx.signal_subscribers->get_ptr_or_create(us.id);
-        subs->insert(ef);
-    });
-    return us.cx.signal_values[us.id];
-}
-
-Signal.set :: (self: #Self, value: self.T) {
-    v := &self.cx.signal_values[self.id];
-    if v.type != self.T do return;
-
-    *cast(&self.T) v.data = value;
-
-    if subs := self.cx.signal_subscribers->get_ptr(self.id); subs {
-        listeners := subs->as_iter()
-                         ->map(x => *x)
-                         ->collect(context.temp_allocator);
-
-        subs->clear();
-
-        for listeners {
-            run_effect(it);
-        }
-    }
-}
-
-// reaction logic }}}
-
-// dom integration {{{
-
-react_inner :: (el: js.Value, args_: ..any) -> js.Value {
-    args := any_deep_copy(args_);
-    effect(([el, args]) => {
-        result: dyn_str;
-        use runtime.info;
-
-        for arg in args {
-            if info.struct_constructed_from(arg.type, Signal) {
-                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
-                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
-            } else {
-                conv.format_va(&result, "{}", any.[ arg ]);
-            }
-        }
-        el->set("innerHTML", cast(str) result);
-    });
-
-    return el;
-}
-
-react_outer :: (el: js.Value, args_: ..any) -> js.Value {
-    args := any_deep_copy(args_);
-    effect(([el, args]) => {
-        result: dyn_str;
-        use runtime.info;
-
-        for arg in args {
-            if info.struct_constructed_from(arg.type, Signal) {
-                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
-                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
-            } else {
-                conv.format_va(&result, "{}", any.[ arg ]);
-            }
-        }
-        el->set("outerHTML", cast(str) result);
-    });
-
-    return el;
-}
-
-react_text :: (el: js.Value, args_: ..any) -> js.Value {
-    args := any_deep_copy(args_);
-    effect(([el, args]) => {
-        result: dyn_str;
-        use runtime.info;
-
-        for arg in args {
-            if info.struct_constructed_from(arg.type, Signal) {
-                signal_type := *cast(&type_expr) arg.type->info()->as_struct().parameters[0].data;
-                conv.format_va(&result, "{}", any.[ Signal.get_as_type(arg.data, signal_type) ]);
-            } else {
-                conv.format_va(&result, "{}", any.[ arg ]);
-            }
-        }
-        el->set("textContent", cast(str) result);
-    });
-
-    return el;
-}
-
-// dom integration }}}
- 
-// signal helper methods {{{
-
-    // increment and decrement {{{
-    Signal(f32).decrement :: (self: #Self) {
-        self->set(self->get() - 1.0)
-    }
-
-    Signal(f32).increment :: (self: #Self) {
-        self->set(self->get() + 1.0)
-    }
-
-    Signal(f64).decrement :: (self: #Self) {
-        self->set(self->get() - 1.0)
-    }
-
-    Signal(f64).increment :: (self: #Self) {
-        self->set(self->get() + 1.0)
-    }
-
-    Signal(i16).decrement :: (self: #Self) {
-        self->set(self->get() - 1)
-    }
-
-    Signal(i16).increment :: (self: #Self) {
-        self->set(self->get() + 1)
-    }
-
-    Signal(i32).decrement :: (self: #Self) {
-        self->set(self->get() - 1)
-    }
-
-    Signal(i32).increment :: (self: #Self) {
-        self->set(self->get() + 1)
-    }
-
-    Signal(i64).decrement :: (self: #Self) {
-        self->set(self->get() - 1)
-    }
-
-    Signal(i64).increment :: (self: #Self) {
-        self->set(self->get() + 1)
-    }
-
-    Signal(i8).decrement :: (self: #Self) {
-        self->set(self->get() - 1)
-    }
-
-    Signal(i8).increment :: (self: #Self) {
-        self->set(self->get() + 1)
-    }
-
-    Signal(u16).decrement :: (self: #Self) {
-        self->set(self->get() - 1)
-    }
-
-    Signal(u16).increment :: (self: #Self) {
-        self->set(self->get() + 1)
-    }
-
-    Signal(u32).decrement :: (self: #Self) {
-        self->set(self->get() - 1)
-    }
-
-    Signal(u32).increment :: (self: #Self) {
-        self->set(self->get() + 1)
-    }
-
-    Signal(u64).decrement :: (self: #Self) {
-        self->set(self->get() - 1)
-    }
-
-    Signal(u64).increment :: (self: #Self) {
-        self->set(self->get() + 1)
-    }
-
-    Signal(u8).decrement :: (self: #Self) {
-        self->set(self->get() - 1)
-    }
-
-    Signal(u8).increment :: (self: #Self) {
-        self->set(self->get() + 1)
-    }
-    // increment and decrement }}}
-
-Signal(bool).toggle :: (self: #Self) {
-    self->set(!self->get())
-}
-
-// signal helper methods }}}
-
-
-// forms {{{
-model :: (el: js.Value, signal: Signal($T)) -> js.Value {
-    get_dom()->call("addEventListener", "input", js.func((this, args, [el, signal]) => {
-        signal->set(el |> get_value());
-        return js.Undefined;
-    }));
-    return el;
-}
-// forms }}}

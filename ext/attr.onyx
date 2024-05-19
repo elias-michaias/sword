@@ -1,0 +1,71 @@
+#load "core/onyx/compiler_extension"
+
+use onyx.compiler_extension {*}
+
+use core.conv
+use core {
+    eprintf
+    tprintf
+    Result
+}
+
+main :: () {
+    ext := ExtensionContext.make("Generate Attributes for HTML")
+    ext->handle_macro("new_html_attribute", handle_html)
+    ext->start(message_handler)
+}
+
+handle_html :: (
+    ext: &ExtensionContext,
+    em: ExpansionInfo
+) -> Result(str, ExpansionFailureReason) {
+
+    code: dyn_str
+
+    attrs := em.body |> str.split(',')
+
+
+    code->append("HtmlAttr :: struct {")
+    for attr in attrs {
+        attr = attr |> str.strip_whitespace()
+        for i in attr.length {
+            if attr[i] == '-' do attr[i] = '_'
+        }
+        code->append(tprintf("
+        _{}: str = \"\"
+        ", attr))
+    }
+    code->append("}")
+
+    code->append("HtmlAttr.apply :: (self: #Self, el: js.Value) -> js.Value {")
+    for attr in attrs {
+        attr = attr |> str.strip_whitespace()
+        code->append(tprintf("
+        if self._{} != \"\" do el |> set_attr(\"{}\", self._{})
+        ", attr, attr, attr))
+    }
+    code->append("return el; }")
+    // eprintf("{p}\n\n", cast(str) code)
+    return .{ Ok = code }
+}
+
+message_handler :: (ext, msg) => {
+    // Print debugging an extensions requires you to print
+    // to standard error, so you have to use 'eprintf'
+    // eprintf("Message: {p}\n", msg)
+
+    switch msg {
+        case .ExpandMacro as em {
+            // Every macro expansion needs a response, even if it
+            // is not supported, otherwise the compiler will hang.
+            ext->send(.{
+                Expansion = .{
+                    id = em.id,
+                    code = .{ Err = .NotSupported }
+                }
+            })
+        }
+
+        case _ {}
+    }
+}

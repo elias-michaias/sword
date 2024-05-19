@@ -24,12 +24,14 @@ handle_event :: (
 
     events := em.body |> str.split(',')
 
-    // code->append("on :: struct {")
+
+// Beginning of "on" struct {{{
+    code->append("on :: struct {")
 
     for event in events {
         event = event |> str.strip_whitespace()
         code->append(tprintf("
-on{} :: #match {
+{} :: #match {
     (el: $T, func: (T) -> void) -> #auto {
         el->call(\"addEventListener\", \"{}\", js.func((this, args, [el, func]) => {
             func(el);
@@ -92,6 +94,192 @@ on{} :: #match {
 }
         ", event, event, event, event, event, event, event, event, event))
     }
+
+        code->append(tprintf("
+click_outside :: #match {
+    (el: $T, func: (T) -> void) -> #auto {
+        js.Global->get(\"document\")->call(\"addEventListener\", \"click\", js.func((this, args, [el, func]) => {
+            if el != js.Global->get(\"event\")->get(\"target\") {
+                func(el);
+            }
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: (T) -> js.Value) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: () -> void) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: () -> js.Value) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: (js.Value) -> void) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: (js.Value) -> js.Value) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: () -> void) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: () -> js.Value) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+}
+        "))
+
+        code->append(tprintf("
+submit_prevent :: #match {
+    (el: $T, func: (T) -> void) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: (T) -> js.Value) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: () -> void) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: $T, func: () -> js.Value) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: (js.Value) -> void) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: (js.Value) -> js.Value) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func(el);
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: () -> void) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: () -> js.Value) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            func();
+            return js.Undefined;
+        }));
+        return el;
+    }
+}
+        "))
+
+        code->append(tprintf("
+submit_formdata :: #match {
+    (el: js.Value, func: (Map(str, str)) -> void) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            el |> get_form() |> func()
+            return js.Undefined;
+        }));
+        return el;
+    }
+
+    (el: js.Value, func: (Map(str, str)) -> Map(str, str)) -> #auto {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            el |> get_form() |> func()
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: (Map(str, str)) -> void) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            el |> get_form() |> func()
+            return js.Undefined;
+        }));
+        return el;
+    }
+    (func: (Map(str, str)) -> Map(str, str)) => ([func] el: js.Value) -> js.Value {
+        el->call(\"addEventListener\", \"submit\", js.func((this, args, [el, func]) => {
+            js.Global->get(\"event\")->call(\"preventDefault\");
+            el |> get_form() |> func()
+            return js.Undefined;
+        }));
+        return el;
+    }
+}
+        "))
+
+        code->append("}")
+// End of "on" struct }}}
 
         code->append(tprintf("
 listen :: #match {
@@ -159,10 +347,11 @@ listen :: #match {
 trigger :: (name: str) -> void {
     event := js.Global->get(\"CustomEvent\")->new(name)
     get_dom()->call(\"dispatchEvent\", event);
+    event->release()
 }
         "))
 
-    // code->append("}")
+
     // eprintf("{p}\n\n", cast(str) code)
     return .{ Ok = code }
 }

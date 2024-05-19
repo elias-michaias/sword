@@ -1,48 +1,27 @@
 #load "./module.onyx"
 use sword {*}
 use core {*}
+use core.misc {*}
+use core.intrinsics.types {*}
 
-_even_shy :: (input) => applicator(([input], el) =>
-    el 
-    |> style_contract(
-        .{.["color: blue", "color: red"]
-            ([input]) => input->get() % 2 == 0}
-        .{.["text-decoration: underline", "font-style: italic"]
-            ([input]) => input->get() % 2 == 0}
+opt :: Optional
+
+_wow :: (input) => applicator(([input], el) => {
+    el |> set_attr("href", input)
+    return el
+})
+
+counter :: () -> js.Value {
+    return div(
+        div(.{ _class="container" }
+            do {
+                if 1 == 1 do return h1("Works!")
+                return empty()
+            }
+        )
     )
-    |> id_contract(
-        .{.["special", "weird"]
-            ([input]) => input->get() % 2 == 0}
-    )
-    |> class_contract(
-        .{.["", "odd"]
-            ([input]) => input->get() % 2 == 0}
-        .{.["shy", ""]
-            ([input]) => input->get() % 2 == 0}
-    ) 
-    |> attr_contract(
-        .{.["href=#target", ""]
-            ([input]) => input->get() % 2 == 0}
-    )
-    // |> child_contract(
-    //     .{.[ h1("Hello!"), h1("World!") ]
-    //         ([input]) => input->get() % 2 == 0}
-    // )
-)
+}
 
 main :: () {
-    msg := signal("")
-
-    div(
-        textarea(attr="placeholder=Type...")() |> model(msg)
-        br()
-        span(msg) |> style_contract(
-            .{.["color: blue", "color: red"]
-                ([msg]) => msg->get().length % 2 == 0}
-            .{.["text-decoration: underline", "font-style: italic"]
-                ([msg]) => msg->get().length % 3 == 0}
-        )
-        br()
-    ) 
-    |> append(get_body())
+    counter() |> append_body()
 } 

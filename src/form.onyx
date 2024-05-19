@@ -1,0 +1,59 @@
+package sword
+
+use core {*}
+use core.misc {*}
+
+
+
+// binding {{{
+model_deaf :: (el: js.Value, signal: Signal($T)) -> js.Value {
+    get_dom()->call("addEventListener", "input", js.func((this, args, [el, signal]) => {
+        signal->set(get_value(el)?);
+        return js.Undefined;
+    }));
+    return el;
+}
+
+model :: (el: js.Value, signal: Signal($T)) -> js.Value {
+    model_deaf(el, signal)
+    effect(([el, signal]) => { 
+        el |> set_value(signal->get()) 
+    })
+    return el;
+}
+// binding }}}
+
+// form {{{
+_name :: (name: str) => applicator(([name], el: js.Value) =>
+    el |> set_attr("name", name)
+)
+
+get_name :: (el: js.Value) -> ?str {
+    return get_attr(el, "name")?
+}
+
+set_name :: (el: js.Value, name: str) -> js.Value {
+    el |> set_attr("name", name)
+    return el
+}
+
+get_value :: (el: js.Value) -> ?str {
+    return el->get("value")->as_str()
+}
+
+set_value :: (el: js.Value, val: $T) -> js.Value {
+    el->set("value", tprintf("{}", val));
+    return el;
+}
+
+get_form :: (el: js.Value) => {
+    results: Map(str, str)
+
+    el |> get_children() |> batch(([&results], el) => {
+        el |> get_name()? |> results->put(el |> get_value()?)
+        return .{}
+    })
+
+    return results
+}
+// form }}}

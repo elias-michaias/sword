@@ -41,7 +41,7 @@ Here are some examples of Sword in action:
 ## Reactivity
 ```fsharp
 count := signal(0)
-double := memo(([count]) => count->get() * 2)
+double := computed(([count]) => count->get() * 2)
 
 div (
     "Count: ", count
@@ -202,12 +202,13 @@ todo :: (item: str) => {
 }
 
 todolist :: () =>
+    msg := signal("")
     div(
         h1("Todo List")
-        input(attr="placeholder=Todo...")()
-        button("Add") |> onclick((el) => { 
-            el |> prev_el() |> get_value() |> todo() |> append(get_body())
-            el |> prev_el() |> set_value("")
+        input(attr="placeholder=Todo...")() |> model(msg)
+        button("Add") |> onclick(() => { 
+            msg->get() |> todo() |> append(get_body())
+            msg->set("")
         })
     )
 
@@ -268,7 +269,6 @@ div(
         .{.["text-decoration: underline", "font-style: italic"]
             ([msg]) => msg->get().length % 3 == 0}
     )
-    br()
 ) 
 |> append(get_body())
 ```

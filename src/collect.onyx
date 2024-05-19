@@ -1,0 +1,47 @@
+package sword
+
+use core.js
+use core.conv
+use core.misc {*}
+use core {
+    tprintf
+}
+
+// pile {{{
+
+element_pile: Map(str, js.Value)
+
+push_pile :: (el: js.Value, key: str) -> js.Value {
+    if !element_pile->has(key) {
+        element_pile->put(key, el)
+        return element_pile->get(key)->unwrap()
+    } else {
+        return el
+    }
+}
+
+pull_pile :: (key: str) -> js.Value {
+    if element_pile->has(key) {
+        output := element_pile->get(key)->unwrap()
+        element_pile->delete(key)
+        return output
+    } else { 
+        return js.Undefined
+    }
+}
+
+from_pile :: (key: str) -> js.Value {
+    if element_pile->has(key) {
+        return element_pile->get(key)->unwrap()
+    } else {
+        return js.Undefined
+    }
+}
+
+clear_pile :: () {
+    element_pile->clear()
+}
+
+// pile }}}
+
+

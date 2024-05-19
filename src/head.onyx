@@ -5,7 +5,6 @@ use core {
     tprintf
 }
 
-
 /// Sets the meta tag with the specified name and content.
 /// If a meta tag with the same name already exists, its content will be updated.
 /// - `name`: The name attribute of the meta tag.
@@ -34,7 +33,7 @@ get_meta :: (name: str) -> str {
     if _meta->is_null() {
         return "";
     } else {
-        return _meta |> get_attr("content");
+        return _meta |> get_attr("content") |> Optional.or_return();
     }
 }
 

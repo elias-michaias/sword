@@ -9,6 +9,11 @@ use core {
 
 ElementCollection :: #distinct js.Value
 
+/// Returns js.Undefined
+empty :: () -> js.Value {
+    return js.Undefined;
+}
+
 /// Returns the global document object.
 get_dom :: () -> js.Value {
     return js.Global->get("document");
@@ -43,6 +48,18 @@ remove :: (el: js.Value) {
 /// - `target`: The parent element.
 append :: (el: js.Value, target: js.Value) -> js.Value {
     target->call("appendChild", el);
+    return el;
+}
+
+append_dom :: (el: js.Value) -> js.Value {
+    dom := get_dom();
+    dom->call("appendChild", el);
+    return el;
+}
+
+append_body :: (el: js.Value) -> js.Value {
+    body := get_body();
+    body->call("appendChild", el);
     return el;
 }
 
@@ -190,10 +207,24 @@ batch :: #match {
         }
         return els;
     }
+    (els: ElementCollection, fn: (js.Value) -> void) -> ElementCollection {
+        _els := cast(js.Value) els;
+        for i in _els->length() {
+            fn(_els->index(i));
+        }
+        return els;
+    }
     (els: ElementCollection, fn: (js.Value, i32) -> $T) -> ElementCollection {
         _els := cast(js.Value) els;
         for i in _els->length() {
             fn(_els->index(i), i);
+        }
+        return els;
+    }
+    (els: ElementCollection, fn: (js.Value) -> $T) -> ElementCollection {
+        _els := cast(js.Value) els;
+        for i in _els->length() {
+            fn(_els->index(i));
         }
         return els;
     }
@@ -338,30 +369,12 @@ remove_attr :: (el: js.Value, attr: str) -> js.Value {
 /// Returns the value of the specified attribute of the specified element.
 /// - `el`: The element to get the attribute value from.
 /// - `attr`: The attribute name.
-get_attr :: (el: js.Value, attr: str) -> str {
+get_attr :: (el: js.Value, attr: str) -> ?str {
     attribute := el->call("getAttribute", attr);
-    return attribute->as_str()->unwrap();
+    return attribute->as_str();
 }
 
 // attr }}}
-
-// form {{{
-
-/// Returns the value attribute of the specified element.
-/// - `el`: The element to get the value attribute from.
-get_value :: (el: js.Value) -> str {
-    return el->get("value")->as_str()->unwrap();
-}
-
-/// Sets the value attribute of the specified element to the specified value.
-/// - `el`: The element to set the value attribute of.
-/// - `val`: The new value.
-set_value :: (el: js.Value, val: $T) -> js.Value {
-    el->set("value", tprintf("{}", val));
-    return el;
-}
-
-// form }}}
 
 // hierarchy {{{
 get_content :: (el: js.Value) -> js.Value {
@@ -420,6 +433,10 @@ get_children :: #match {
     }
 }
 
+get_descendants :: (el: js.Value) -> ElementCollection {
+    return cast(ElementCollection, el |> query_all(":scope *"));
+}
+
 query_children :: (el: js.Value, selector: str) -> js.Value {
     return el |> query(tprintf(":scope > ", selector));
 }
@@ -446,40 +463,3 @@ console_log :: (msgs: ..any) {
 }
 
 // misc }}}
-
-// pile {{{
-
-element_pile: Map(str, js.Value)
-
-push_pile :: (el: js.Value, key: str) -> js.Value {
-    if !element_pile->has(key) {
-        element_pile->put(key, el)
-        return element_pile->get(key)->unwrap()
-    } else {
-        return el
-    }
-}
-
-pull_pile :: (key: str) -> js.Value {
-    if element_pile->has(key) {
-        output := element_pile->get(key)->unwrap()
-        element_pile->delete(key)
-        return output
-    } else { 
-        return js.Undefined
-    }
-}
-
-from_pile :: (key: str) -> js.Value {
-    if element_pile->has(key) {
-        return element_pile->get(key)->unwrap()
-    } else {
-        return js.Undefined
-    }
-}
-
-clear_pile :: () {
-    element_pile->clear()
-}
-
-// pile }}}

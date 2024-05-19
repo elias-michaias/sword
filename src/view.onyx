@@ -12,19 +12,19 @@ ElementMessageId :: #distinct str
 ElementMessageAttr :: #distinct str
 ElementMessageStyle :: #distinct str
 
-class :: (class_: $T) -> ElementMessageClass {   
+_class :: (class_: $T) -> ElementMessageClass {   
     return cast(ElementMessageClass, tprintf("{}", class_))
 }
 
-id :: (id_: $T) -> ElementMessageId {
+_id :: (id_: $T) -> ElementMessageId {
     return cast(ElementMessageId, tprintf("{}", id_))
 }
 
-attr :: (attr_: $T) -> ElementMessageAttr {
+_attr :: (attr_: $T) -> ElementMessageAttr {
     return cast(ElementMessageAttr, tprintf("{}", attr_))
 }
 
-style :: (style_: $T) -> ElementMessageStyle {
+_style :: (style_: $T) -> ElementMessageStyle {
     return cast(ElementMessageStyle, tprintf("{}", style_))
 }
 
@@ -37,6 +37,9 @@ extend :: (el: js.Value, args: ..any) -> js.Value {
 
 applicator :: #match {
     (func: (js.Value) -> js.Value) => ([func] el: js.Value) -> js.Value {
+        // context.closure_allocate = (size) => {
+        //     return context.allocator->alloc(size)
+        // }
         return func(el)
     }
     (func: (js.Value) -> void) => ([func] el: js.Value) {
@@ -49,7 +52,10 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
     if !info.struct_constructed_from(targets_.type, Signal) {
         switch type {
             case js.Value {
-                *any_as(targets_, js.Value) |> append(el);
+                src := *any_as(targets_, js.Value)
+                if cast(u64) src != cast(u64) js.Undefined {
+                    el->call("appendChild", src);
+                }
             }
             case ElementCollection {
                 col := *any_as(targets_, ElementCollection);
@@ -83,11 +89,25 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
                     el |> set_style(key, key_val[1]);
                 }
             }
-            case #type (js.Value) -> js.Value, #type (js.Value) -> void {
+            case #type (js.Value) -> js.Value {
                 proc := *any_as(targets_, #type (js.Value) -> js.Value)
                 proc(el)
             }
+            case #type (js.Value) -> void {
+                proc := *any_as(targets_, #type (js.Value) -> void)
+                proc(el)
+            }
+            case #type () -> i32 {
+                reactor := get_dom() |> create("span") |> append(el)
+                proc := *any_as(targets_, #type () -> i32)
+                effect(([reactor, proc]) => {
+                    reactor |> set_inner(proc())
+                })
+            }
             case #default {
+                if info.struct_constructed_from(targets_.type, Optional) {
+                    break
+                }
                 // info := targets_.type->info()
                 // if info.kind == .Function {
                 //     func_info := info->as_function()
@@ -96,7 +116,7 @@ view_select :: (el: js.Value, type: type_expr, targets_: $T) -> js.Value {
                 //         func(el)
                 //     }
                 // } else {
-                    el->call("insertAdjacentText", "beforeend", conv.format_va("{}", any.[targets_]));
+                el->call("insertAdjacentText", "beforeend", conv.format_va("{}", any.[targets_]));
                 // }
             }
 

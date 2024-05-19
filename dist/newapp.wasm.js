@@ -343,3 +343,5 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
         });
     }, 1000);
 }
+
+(await Onyx.load("/static/app.wasm")).start()

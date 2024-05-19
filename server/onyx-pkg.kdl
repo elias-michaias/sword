@@ -25,7 +25,6 @@ lsp {
 
 build {
     default {
-        runtime "js" 
         source "./server.onyx" 
         target "../dist/server.wasm" 
     }

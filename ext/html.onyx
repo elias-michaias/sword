@@ -34,6 +34,34 @@ handle_html :: (
         }
         code->append(tprintf("
 {} :: #match {
+    (attrs: HtmlAttr) => ([attrs], args: ..any) -> js.Value {
+        new_el := get_dom() 
+        |> create(\"{}\")
+
+        // attr_apply_html(attrs, new_el)
+        //
+        new_el |> attrs->apply()
+        //
+        // for attr in attrs {
+        //     new_el |> attr()
+        // }
+
+        for arg in args {
+            new_el |> view_select(arg.type, arg);
+        }
+        return new_el
+    }
+    (attrs: HtmlAttr, args: ..any) -> js.Value {
+        new_el := get_dom() 
+        |> create(\"{}\")
+
+        new_el |> attrs->apply()
+
+        for arg in args {
+            new_el |> view_select(arg.type, arg);
+        }
+        return new_el
+    }
     (args: ..any) -> js.Value {
         new_el := get_dom() 
         |> create(\"{}\")
@@ -42,34 +70,8 @@ handle_html :: (
         }
         return new_el
     }
-    (class, id, attr, style := \"\") => ([class, id, attr, style] args: ..any) -> js.Value {
-            new_el := get_dom()
-            |> create(\"{}\")
-            if class != \"\" do new_el |> set_class(class)
-            if id != \"\" do new_el |> set_id(id)
-            if attr != \"\" {
-                attrs := attr |> str.split(' ');
-                for attr_ in attrs {
-                    key_val := attr_ |> str.split('=');
-                    new_el |> set_attr(key_val[0], key_val[1]);
-                }
-            }
-            if style != \"\" {
-                styles := style |> str.split(';');
-                for style_ in styles {
-                    key_val := style_ |> str.split(':');
-                    key := key_val[0] |> str.strip_whitespace();
-                    val := key_val[1];
-                    new_el |> set_style(key, key_val[1]);
-                }
-            }
-            for arg in args {
-                new_el |> view_select(arg.type, arg);
-            }
-            return new_el
-    }
 }
-        ", procname, element, element))
+        ", procname, element, element, element))
     }
     // eprintf("{p}\n\n", cast(str) code)
     return .{ Ok = code }

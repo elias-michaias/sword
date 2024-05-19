@@ -2,22 +2,19 @@
 use http.server
 
 main :: () {
-    static := server.static("/static", ".");
-
-    router := server.router();
+    static := server.static("/static", ".")
+    logger := server.logger(style=.V2)
+    router := server.router()
 
     router->get("/", (req, res) => {
-        res->status(200);
-        res->file("./index.html");  
-    });
+        res->status(200)
+        res->file("./index.html")
+    })
 
-    app := server.pipeline();
-    app->add(&static);
-    app->add(&router);
+    app := server.pipeline()
+    app->add(&static)
+    app->add(&router)
+    app->add(&logger)
 
-    logger := server.logger(style=.V2);
-    app->add(&logger);
-
-    host := server.tcp(&app);
-    host->serve(8080);
+    host := server.tcp(&app)->serve(8080)
 }
